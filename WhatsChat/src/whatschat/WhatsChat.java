@@ -12,14 +12,19 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.SocketTimeoutException;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import java.util.Random;
+import javax.swing.JTextPane;
+import javax.swing.JList;
 
 public class WhatsChat extends JFrame {
 	
-	UserManagement um = new UserManagement();
 	String tempUsername = "";
+	boolean registered = false;
 	
 	private JPanel contentPane;
 	private JTextField txtUserName;
@@ -64,7 +69,7 @@ public class WhatsChat extends JFrame {
 		txtUserName.setColumns(10);
 		
 		JLabel lblNewLabel = new JLabel("Current Username:");
-		JLabel lblCurrentUsername = new JLabel("-");
+		JLabel lblCurrentUsername = new JLabel("NotRegistered");
 		JButton btnRegisterUser = new JButton("Register User");
 		
 		btnRegisterUser.addActionListener(new ActionListener() {
@@ -72,9 +77,34 @@ public class WhatsChat extends JFrame {
 				if(txtUserName.getText().trim().equals("")){
 					JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
-					tempUsername = lblCurrentUsername.getText(); // Save current username into temp for revert if taken
-					um.checkUsername(lblCurrentUsername.getText(), txtUserName.getText()); // Checks if the username is taken by other user
-					lblCurrentUsername.setText(txtUserName.getText()); // Set current username to new username
+					String command = "UsernameCheck " + txtUserName.getText() + " " + lblCurrentUsername.getText();
+					network.sendBroadcastMessage(command); // Checks if the username is taken by other user
+					try {
+						byte receiveBuf[] = new byte[1000];
+						DatagramPacket dgpReceived = new DatagramPacket(receiveBuf, receiveBuf.length);
+						multicastBroadcastSocket.setSoTimeout(2000); 
+						try {
+							multicastBroadcastSocket.receive(dgpReceived);
+							multicastBroadcastSocket.setSoTimeout(0); // Clear timeout
+							byte[] receivedData = dgpReceived.getData();
+							int length = dgpReceived.getLength();
+							String receivedMessage = new String(receivedData, 0, length);
+				            String[] response = receivedMessage.split("\\s+"); // Split command by space
+				            if (response[0].equals("UsernameTaken") && response[1].equals(lblCurrentUsername.getText())) { // Username is taken and is from the requester
+								JOptionPane.showMessageDialog(new JFrame(), "Username has been taken", "Error", JOptionPane.ERROR_MESSAGE);
+				            }
+
+						} catch (SocketTimeoutException ex) {
+							multicastBroadcastSocket.setSoTimeout(0);
+							lblCurrentUsername.setText(txtUserName.getText());
+							JOptionPane.showMessageDialog(null,
+									txtUserName.getText() + ", you have been successfully registered!");
+
+						}
+					} catch (IOException ex) {
+						ex.printStackTrace();
+					}
+
 				}
 			}
 		});
@@ -86,6 +116,17 @@ public class WhatsChat extends JFrame {
 		
 		lblCurrentUsername.setBounds(131, 11, 237, 16);
 		contentPane.add(lblCurrentUsername);
+		
+		JTextArea textArea = new JTextArea();
+		textArea.setBounds(114, 197, 489, 183);
+		contentPane.add(textArea);
+		
+		Random rand = new Random();
+		lblCurrentUsername.setText("Eva" + rand.nextInt(50));
+		
+		JList list = new JList();
+		list.setBounds(20, 57, 133, 123);
+		contentPane.add(list);
 		
 		new Thread(new Runnable() {
 			@Override
@@ -100,22 +141,12 @@ public class WhatsChat extends JFrame {
 						String msg = new String(receivedData,0,length);
 						
 			            String[] command = msg.split("\\s+"); // Split command by space
-						if (command[0].equals("UsernameCheck")) { //UsernameCheck currentUsername newUsername
-							System.out.println("UsernameCheck command called");
-							if (lblCurrentUsername.getText().equals(command[2]) && !tempUsername.equals(command[1]) ) { // Name matches. Excludes checking ownself
-								String bmsg = "UsernameCheckReply Taken " + command[2] + " " + command[1];
+						if (command[0].equals("UsernameCheck")) { //UsernameCheck newUsername requester 
+							System.out.println("UsernameCheck");
+							if (lblCurrentUsername.getText().equals(command[1])) { 
+								System.out.println("Taken");
+								String bmsg = "UsernameTaken " + command[2]; // Sends taken command + requester
 								network.sendBroadcastMessage(bmsg);
-							} 
-						}
-						if (command[0].equals("UsernameCheckReply")) { //UsernameCheckReply Taken newUsername requestingUser
-							System.out.println("Requesting user: " + command[3]);
-							System.out.println("Temp username : " + tempUsername);
-							if (command[3].equals(tempUsername)) { // Check if this user is the one requesting
-								if (command[1].equals("Taken")) { // Username is taken
-									lblCurrentUsername.setText(tempUsername); // Revert back to old username;
-									txtUserName.setText(""); // Clear the textfield
-									JOptionPane.showMessageDialog(new JFrame(), "Username has been taken", "Error", JOptionPane.ERROR_MESSAGE);
-								}
 							}
 						}
 						if (command[0].equals("Status")) {
@@ -130,5 +161,4 @@ public class WhatsChat extends JFrame {
 				}
 			}
 		}).start();	}
-	
 }
