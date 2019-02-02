@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -23,12 +24,15 @@ import javax.swing.JList;
 
 public class WhatsChat extends JFrame {
 	
+	UserManagement um = new UserManagement();
+	
+	
 	String tempUsername = "";
 	boolean registered = false;
 	
 	private JPanel contentPane;
 	private JTextField txtUserName;
-
+	
 	/**
 	 * Launch the application.
 	 */
@@ -57,7 +61,6 @@ public class WhatsChat extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		
 		Network network = new Network();
 		network.connectToBroadcast();
 		MulticastSocket multicastBroadcastSocket = network.getBroadcastSocket();
@@ -71,7 +74,12 @@ public class WhatsChat extends JFrame {
 		JLabel lblNewLabel = new JLabel("Current Username:");
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
 		JButton btnRegisterUser = new JButton("Register User");
-		
+		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers());
+
+		// Get all current online user
+		String command = "KnockKnock";
+		network.sendBroadcastMessage(command);
+
 		btnRegisterUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(txtUserName.getText().trim().equals("")){
@@ -118,15 +126,14 @@ public class WhatsChat extends JFrame {
 		contentPane.add(lblCurrentUsername);
 		
 		JTextArea textArea = new JTextArea();
-		textArea.setBounds(114, 197, 489, 183);
+		textArea.setBounds(373, 197, 230, 183);
 		contentPane.add(textArea);
 		
 		Random rand = new Random();
-		lblCurrentUsername.setText("Eva" + rand.nextInt(50));
+		lblCurrentUsername.setText("Eva" + rand.nextInt(2000));
 		
-		JList list = new JList();
-		list.setBounds(20, 57, 133, 123);
-		contentPane.add(list);
+		listOnlineUsers.setBounds(17, 69, 133, 242);
+		contentPane.add(listOnlineUsers);
 		
 		new Thread(new Runnable() {
 			@Override
@@ -149,7 +156,14 @@ public class WhatsChat extends JFrame {
 								network.sendBroadcastMessage(bmsg);
 							}
 						}
-						if (command[0].equals("Status")) {
+						if (command[0].equals("KnockKnock")) {
+							String bmsg = "Hello " + lblCurrentUsername.getText(); // Sends hello response with user name
+							network.sendBroadcastMessage(bmsg);
+						}
+						if (command[0].equals("Hello")) {
+							um.addOnlineUser(command[1]); // Add user to online user model
+						}
+						if (command[0].equals("Bye")) { // Going offline
 						}
 						
 
