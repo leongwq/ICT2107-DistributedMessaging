@@ -21,17 +21,20 @@ import javax.swing.JTextArea;
 import java.util.Random;
 import javax.swing.JTextPane;
 import javax.swing.JList;
+import javax.swing.JLayeredPane;
+import javax.swing.ListModel;
 
 public class WhatsChat extends JFrame {
 	
 	UserManagement um = new UserManagement();
-	
+	GroupManagement gm = new GroupManagement();
 	
 	String tempUsername = "";
 	boolean registered = false;
 	
 	private JPanel contentPane;
 	private JTextField txtUserName;
+	private JTextField textField;
 	
 	/**
 	 * Launch the application.
@@ -42,7 +45,6 @@ public class WhatsChat extends JFrame {
 				try {
 					WhatsChat frame = new WhatsChat();
 					frame.setVisible(true);
-					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -55,7 +57,7 @@ public class WhatsChat extends JFrame {
 	 */
 	public WhatsChat() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 685, 467);
+		setBounds(100, 100, 685, 431);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -126,14 +128,55 @@ public class WhatsChat extends JFrame {
 		contentPane.add(lblCurrentUsername);
 		
 		JTextArea textArea = new JTextArea();
-		textArea.setBounds(373, 197, 230, 183);
+		textArea.setBounds(330, 121, 349, 242);
 		contentPane.add(textArea);
 		
 		Random rand = new Random();
 		lblCurrentUsername.setText("Eva" + rand.nextInt(2000));
 		
-		listOnlineUsers.setBounds(17, 69, 133, 242);
+		listOnlineUsers.setBounds(6, 121, 117, 242);
 		contentPane.add(listOnlineUsers);
+		
+		JLabel lblNewLabel_1 = new JLabel("Group Management");
+		lblNewLabel_1.setBounds(6, 40, 133, 16);
+		contentPane.add(lblNewLabel_1);
+		
+		JButton btnCreate = new JButton("Create");
+		btnCreate.setBounds(6, 62, 117, 29);
+		contentPane.add(btnCreate);
+		
+		JButton btnNewButton = new JButton("Edit");
+		btnNewButton.setBounds(118, 62, 117, 29);
+		contentPane.add(btnNewButton);
+		
+		JButton btnNewButton_1 = new JButton("Delete");
+		btnNewButton_1.setBounds(228, 62, 117, 29);
+		contentPane.add(btnNewButton_1);
+		
+		JLabel lblOnlineUsers = new JLabel("Online Users");
+		lblOnlineUsers.setBounds(6, 97, 91, 16);
+		contentPane.add(lblOnlineUsers);
+		
+		JLabel lblNewLabel_2 = new JLabel("Groups");
+		lblNewLabel_2.setBounds(131, 97, 61, 16);
+		contentPane.add(lblNewLabel_2);
+		
+		JList<String> list = new JList<String>(gm.getGroups());
+		list.setBounds(135, 121, 183, 242);
+		contentPane.add(list);
+		
+		JLabel lblConversation = new JLabel("Conversation");
+		lblConversation.setBounds(330, 97, 91, 16);
+		contentPane.add(lblConversation);
+		
+		JButton btnNewButton_2 = new JButton("Send");
+		btnNewButton_2.setBounds(562, 375, 117, 29);
+		contentPane.add(btnNewButton_2);
+		
+		textField = new JTextField();
+		textField.setBounds(6, 375, 553, 26);
+		contentPane.add(textField);
+		textField.setColumns(10);
 		
 		new Thread(new Runnable() {
 			@Override
