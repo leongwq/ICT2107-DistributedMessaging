@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Random;
 
 public class Network {
 	
@@ -53,6 +54,12 @@ public class Network {
 	
 	public int getBroadcastPort() {
 		return PORT;
+	}
+	
+	public String getRandomIP() {
+		Random r = new Random(); // Random IP address
+		String ip = "230.1." + r.nextInt(256) + "." + r.nextInt(256);
+		return ip;
 	}
 
 }

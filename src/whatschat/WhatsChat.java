@@ -141,9 +141,41 @@ public class WhatsChat extends JFrame {
 		lblNewLabel_1.setBounds(6, 40, 133, 16);
 		contentPane.add(lblNewLabel_1);
 		
-		JButton btnCreate = new JButton("Create");
-		btnCreate.setBounds(6, 62, 117, 29);
-		contentPane.add(btnCreate);
+		JButton btnCreateGroup = new JButton("Create");
+		btnCreateGroup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String groupName = JOptionPane.showInputDialog("Enter a group name");
+				String command = "GroupnameCheck " + groupName;
+				network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
+				try {
+					byte receiveBuf[] = new byte[1000];
+					DatagramPacket dgpReceived = new DatagramPacket(receiveBuf, receiveBuf.length);
+					multicastBroadcastSocket.setSoTimeout(2000); 
+					try {
+						multicastBroadcastSocket.receive(dgpReceived);
+						multicastBroadcastSocket.setSoTimeout(0); // Clear timeout
+						byte[] receivedData = dgpReceived.getData();
+						int length = dgpReceived.getLength();
+						String receivedMessage = new String(receivedData, 0, length);
+			            String[] response = receivedMessage.split("\\s+"); // Split command by space
+			            if (response[0].equals("GroupnameTaken") && response[1].equals(groupName)) { // Groupname is taken and is from the requester
+							JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE);
+			            }
+
+					} catch (SocketTimeoutException ex) {
+						multicastBroadcastSocket.setSoTimeout(0);
+						gm.addGroup(groupName, network.getRandomIP());
+						JOptionPane.showMessageDialog(null,
+								groupName + ", have been successfully created!");
+
+					}
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+		btnCreateGroup.setBounds(6, 62, 117, 29);
+		contentPane.add(btnCreateGroup);
 		
 		JButton btnNewButton = new JButton("Edit");
 		btnNewButton.setBounds(118, 62, 117, 29);
@@ -192,9 +224,7 @@ public class WhatsChat extends JFrame {
 						
 			            String[] command = msg.split("\\s+"); // Split command by space
 						if (command[0].equals("UsernameCheck")) { //UsernameCheck newUsername requester 
-							System.out.println("UsernameCheck");
 							if (lblCurrentUsername.getText().equals(command[1])) { 
-								System.out.println("Taken");
 								String bmsg = "UsernameTaken " + command[2]; // Sends taken command + requester
 								network.sendBroadcastMessage(bmsg);
 							}
@@ -208,9 +238,13 @@ public class WhatsChat extends JFrame {
 						}
 						if (command[0].equals("Bye")) { // Going offline
 						}
+						if (command[0].equals("GroupnameCheck")) { // Check if group name is taken
+							if (gm.isGroupNameTaken(command[1])) {
+								String bmsg = "GroupnameTaken " + command[1]; // Sends taken command + requested group name
+								network.sendBroadcastMessage(bmsg);
+							}
+						}
 						
-
-
 			            
 					} catch (IOException ex) {
 						ex.printStackTrace();
