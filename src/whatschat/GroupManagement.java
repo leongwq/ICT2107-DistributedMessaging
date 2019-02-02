@@ -11,8 +11,10 @@ public class GroupManagement {
 	private Map<String, String> IPMapping = new HashMap<String, String>();
 
 	public void addGroup(String groupName, String groupIP) {
-		IPMapping.put(groupName,groupIP);
-		groupsModel.addElement(groupName);
+		if (!groupsModel.contains(groupName)) { // Group name is not taken
+			IPMapping.put(groupName,groupIP);
+			groupsModel.addElement(groupName); 
+		}
 	}
 	
 	public void addOnlineUser(String user) {

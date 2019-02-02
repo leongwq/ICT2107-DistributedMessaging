@@ -18,16 +18,21 @@ import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
+
+import java.util.List;
 import java.util.Random;
 import javax.swing.JTextPane;
 import javax.swing.JList;
 import javax.swing.JLayeredPane;
 import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 
 public class WhatsChat extends JFrame {
 	
 	UserManagement um = new UserManagement();
 	GroupManagement gm = new GroupManagement();
+	
+	List<String> selectedUsers;
 	
 	String tempUsername = "";
 	boolean registered = false;
@@ -144,6 +149,7 @@ public class WhatsChat extends JFrame {
 		JButton btnCreateGroup = new JButton("Create");
 		btnCreateGroup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
 				String groupName = JOptionPane.showInputDialog("Enter a group name");
 				String command = "GroupnameCheck " + groupName;
 				network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
@@ -158,15 +164,21 @@ public class WhatsChat extends JFrame {
 						int length = dgpReceived.getLength();
 						String receivedMessage = new String(receivedData, 0, length);
 			            String[] response = receivedMessage.split("\\s+"); // Split command by space
-			            if (response[0].equals("GroupnameTaken") && response[1].equals(groupName)) { // Groupname is taken and is from the requester
+			            if (response[0].equals("GroupnameTaken") && response[1].equals(groupName)) { // Group name is taken and is from the requester
 							JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE);
 			            }
 
 					} catch (SocketTimeoutException ex) {
 						multicastBroadcastSocket.setSoTimeout(0);
-						gm.addGroup(groupName, network.getRandomIP());
+						String IP = network.getRandomIP();
+						gm.addGroup(groupName, IP);
 						JOptionPane.showMessageDialog(null,
 								groupName + ", have been successfully created!");
+						// Sends invite to all selected members
+						for (int i = 0; i < selectedUsers.size(); i++) {
+							String bmsg = "GroupInvite " + selectedUsers.get(i) + " " + groupName + " " + IP;
+							network.sendBroadcastMessage(bmsg);
+						}
 
 					}
 				} catch (IOException ex) {
@@ -242,6 +254,12 @@ public class WhatsChat extends JFrame {
 							if (gm.isGroupNameTaken(command[1])) {
 								String bmsg = "GroupnameTaken " + command[1]; // Sends taken command + requested group name
 								network.sendBroadcastMessage(bmsg);
+							}
+						}
+						if (command[0].equals("GroupInvite")) { // Group Invite command. GroupInvite invites groupname ip
+							if (command[1].equals(lblCurrentUsername.getText())) { // If this command is for the user
+								// Add the group to own data
+								gm.addGroup(command[2], command[2]);
 							}
 						}
 						
