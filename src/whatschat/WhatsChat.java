@@ -34,7 +34,7 @@ public class WhatsChat extends JFrame {
 	
 	List<String> selectedUsers;
 	
-	String tempUsername = "";
+	String prevUsername = "";
 	boolean registered = false;
 	
 	private JPanel contentPane;
@@ -50,6 +50,7 @@ public class WhatsChat extends JFrame {
 				try {
 					WhatsChat frame = new WhatsChat();
 					frame.setVisible(true);
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -86,13 +87,23 @@ public class WhatsChat extends JFrame {
 		// Get all current online user
 		String command = "KnockKnock";
 		network.sendBroadcastMessage(command);
+		
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
+		    @Override
+		    public void windowClosing(java.awt.event.WindowEvent e) {
+				// App closing. Time to say goodbye.
+				String command = "Bye|" + um.getUser();
+				network.sendBroadcastMessage(command);
+		    }
+		});
+
 
 		btnRegisterUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(txtUserName.getText().trim().equals("")){
 					JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
-					String command = "UsernameCheck " + txtUserName.getText() + " " + lblCurrentUsername.getText();
+					String command = "UsernameCheck|" + txtUserName.getText() + "|" + lblCurrentUsername.getText();
 					network.sendBroadcastMessage(command); // Checks if the username is taken by other user
 					try {
 						byte receiveBuf[] = new byte[1000];
@@ -104,14 +115,16 @@ public class WhatsChat extends JFrame {
 							byte[] receivedData = dgpReceived.getData();
 							int length = dgpReceived.getLength();
 							String receivedMessage = new String(receivedData, 0, length);
-				            String[] response = receivedMessage.split("\\s+"); // Split command by space
+				            String[] response = receivedMessage.split("\\|"); // Split command by |
 				            if (response[0].equals("UsernameTaken") && response[1].equals(lblCurrentUsername.getText())) { // Username is taken and is from the requester
 								JOptionPane.showMessageDialog(new JFrame(), "Username has been taken", "Error", JOptionPane.ERROR_MESSAGE);
 				            }
 
 						} catch (SocketTimeoutException ex) {
 							multicastBroadcastSocket.setSoTimeout(0);
-							lblCurrentUsername.setText(txtUserName.getText());
+							prevUsername = um.getUser(); // Store previous user name
+							um.setUser(txtUserName.getText()); // Set name in UM
+							lblCurrentUsername.setText(txtUserName.getText()); // Display it
 							JOptionPane.showMessageDialog(null,
 									txtUserName.getText() + ", you have been successfully registered!");
 
@@ -119,7 +132,10 @@ public class WhatsChat extends JFrame {
 					} catch (IOException ex) {
 						ex.printStackTrace();
 					}
-
+					
+					// Announce name change
+					String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
+					network.sendBroadcastMessage(nccommand); 
 				}
 			}
 		});
@@ -137,7 +153,9 @@ public class WhatsChat extends JFrame {
 		contentPane.add(textArea);
 		
 		Random rand = new Random();
-		lblCurrentUsername.setText("Eva" + rand.nextInt(2000));
+		String user = "Eva" + rand.nextInt(2000);
+		um.setUser(user);
+		lblCurrentUsername.setText(user);
 		
 		listOnlineUsers.setBounds(6, 121, 117, 242);
 		contentPane.add(listOnlineUsers);
@@ -151,7 +169,7 @@ public class WhatsChat extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
 				String groupName = JOptionPane.showInputDialog("Enter a group name");
-				String command = "GroupnameCheck " + groupName;
+				String command = "GroupnameCheck|" + groupName;
 				network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
 				try {
 					byte receiveBuf[] = new byte[1000];
@@ -163,7 +181,7 @@ public class WhatsChat extends JFrame {
 						byte[] receivedData = dgpReceived.getData();
 						int length = dgpReceived.getLength();
 						String receivedMessage = new String(receivedData, 0, length);
-			            String[] response = receivedMessage.split("\\s+"); // Split command by space
+			            String[] response = receivedMessage.split("\\|"); // Split command by |
 			            if (response[0].equals("GroupnameTaken") && response[1].equals(groupName)) { // Group name is taken and is from the requester
 							JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE);
 			            }
@@ -234,30 +252,35 @@ public class WhatsChat extends JFrame {
 						int length = dgpReceived.getLength();
 						String msg = new String(receivedData,0,length);
 						
-			            String[] command = msg.split("\\s+"); // Split command by space
+			            String[] command = msg.split("\\|"); // Split command by |
+			            System.out.println("Command: " + command[0]);
 						if (command[0].equals("UsernameCheck")) { //UsernameCheck newUsername requester 
-							if (lblCurrentUsername.getText().equals(command[1])) { 
-								String bmsg = "UsernameTaken " + command[2]; // Sends taken command + requester
+							if (um.getUser().equals(command[1])) { 
+								String bmsg = "UsernameTaken|" + command[2]; // Sends taken command + requester
 								network.sendBroadcastMessage(bmsg);
 							}
 						}
+						if (command[0].equals("NameChange")) {
+							um.changeName(command[1], command[2]);
+						}
 						if (command[0].equals("KnockKnock")) {
-							String bmsg = "Hello " + lblCurrentUsername.getText(); // Sends hello response with user name
+							String bmsg = "Hello|" + um.getUser(); // Sends hello response with user name
 							network.sendBroadcastMessage(bmsg);
 						}
 						if (command[0].equals("Hello")) {
 							um.addOnlineUser(command[1]); // Add user to online user model
 						}
 						if (command[0].equals("Bye")) { // Going offline
+							um.removeOnlineUser(command[1]); // Remove offline user from user model
 						}
 						if (command[0].equals("GroupnameCheck")) { // Check if group name is taken
 							if (gm.isGroupNameTaken(command[1])) {
-								String bmsg = "GroupnameTaken " + command[1]; // Sends taken command + requested group name
+								String bmsg = "GroupnameTaken|" + command[1]; // Sends taken command + requested group name
 								network.sendBroadcastMessage(bmsg);
 							}
 						}
 						if (command[0].equals("GroupInvite")) { // Group Invite command. GroupInvite invites groupname ip
-							if (command[1].equals(lblCurrentUsername.getText())) { // If this command is for the user
+							if (command[1].equals(um.getUser())) { // If this command is for the user
 								// Add the group to own data
 								gm.addGroup(command[2], command[2]);
 							}

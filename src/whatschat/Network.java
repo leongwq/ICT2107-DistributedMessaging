@@ -48,8 +48,6 @@ public class Network {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-
-		
 	}
 	
 	public int getBroadcastPort() {

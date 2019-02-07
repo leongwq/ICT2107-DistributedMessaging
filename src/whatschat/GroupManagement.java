@@ -23,6 +23,7 @@ public class GroupManagement {
 		}
 	}
 	
+	
 	public DefaultListModel<String> getGroups() {
 		return groupsModel;
 	}
