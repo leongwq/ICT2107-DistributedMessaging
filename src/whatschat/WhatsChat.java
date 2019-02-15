@@ -194,7 +194,7 @@ public class WhatsChat extends JFrame {
 								groupName + ", have been successfully created!");
 						// Sends invite to all selected members
 						for (int i = 0; i < selectedUsers.size(); i++) {
-							String bmsg = "GroupInvite " + selectedUsers.get(i) + " " + groupName + " " + IP;
+							String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
 							network.sendBroadcastMessage(bmsg);
 						}
 
