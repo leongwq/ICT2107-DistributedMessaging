@@ -1,8 +1,5 @@
 package whatschat;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-
 import javax.swing.DefaultListModel;
 
 public class UserManagement {

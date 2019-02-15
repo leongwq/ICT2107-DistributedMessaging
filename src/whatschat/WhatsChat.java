@@ -27,10 +27,10 @@ import javax.swing.JLayeredPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 
-public class WhatsChat extends JFrame {
+public class WhatsChat extends JFrame implements Performable {
 	
 	UserManagement um = new UserManagement();
-	GroupManagement gm = new GroupManagement();
+	GroupManagement gm = new GroupManagement(WhatsChat.this);
 	
 	List<String> selectedUsers;
 	
@@ -40,6 +40,7 @@ public class WhatsChat extends JFrame {
 	private JPanel contentPane;
 	private JTextField txtUserName;
 	private JTextField textField;
+	JTextArea textArea = new JTextArea();
 	
 	/**
 	 * Launch the application.
@@ -71,13 +72,19 @@ public class WhatsChat extends JFrame {
 		
 		Network network = new Network();
 		network.connectToBroadcast();
-		MulticastSocket multicastBroadcastSocket = network.getBroadcastSocket();
-		InetAddress multicastBroadcastGroup = network.getBroadcastGroup();
+		network.connectToChat(); // Connect to chat IP TODO: Removed fixed IP
+		gm.receiveChat(network);
 		
+		MulticastSocket multicastBroadcastSocket = network.getBroadcastSocket();
+		MulticastSocket multicastChatSocket = network.getChatSocket();
+		InetAddress multicastBroadcastGroup = network.getBroadcastGroup();
+				
 		txtUserName = new JTextField();
 		txtUserName.setBounds(380, 6, 179, 26);
 		contentPane.add(txtUserName);
 		txtUserName.setColumns(10);
+		
+		textField = new JTextField();
 		
 		JLabel lblNewLabel = new JLabel("Current Username:");
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
@@ -148,7 +155,6 @@ public class WhatsChat extends JFrame {
 		lblCurrentUsername.setBounds(131, 11, 237, 16);
 		contentPane.add(lblCurrentUsername);
 		
-		JTextArea textArea = new JTextArea();
 		textArea.setBounds(330, 121, 349, 242);
 		contentPane.add(textArea);
 		
@@ -232,10 +238,15 @@ public class WhatsChat extends JFrame {
 		contentPane.add(lblConversation);
 		
 		JButton btnNewButton_2 = new JButton("Send");
+		btnNewButton_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String chatMsg = textField.getText();
+				network.sendChatMessage(chatMsg);
+			}
+		});
 		btnNewButton_2.setBounds(562, 375, 117, 29);
 		contentPane.add(btnNewButton_2);
 		
-		textField = new JTextField();
 		textField.setBounds(6, 375, 553, 26);
 		contentPane.add(textField);
 		textField.setColumns(10);
@@ -293,4 +304,9 @@ public class WhatsChat extends JFrame {
 				}
 			}
 		}).start();	}
+
+	@Override
+	public void appendToChat(String str) {
+		textArea.append(str);
+	}
 }
