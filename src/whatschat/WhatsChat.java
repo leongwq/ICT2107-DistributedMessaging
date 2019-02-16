@@ -113,23 +113,27 @@ public class WhatsChat extends JFrame implements Performable {
 					JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
 					String command = "UsernameCheck|" + txtUserName.getText() + "|" + lblCurrentUsername.getText();
-					network.sendBroadcastMessage(command); // Checks if the username is taken by other user
-					
-					ExecutorService executor = Executors.newSingleThreadExecutor();
-					Future<String> future = executor.submit(new UsernameCheckTask(network,um));
-					try {
-						future.get(2, TimeUnit.SECONDS);
-						executor.shutdown();
-					} catch (ExecutionException | InterruptedException ex) {
-						ex.printStackTrace();
-					} catch (TimeoutException ex) { // Check if username is taken
-						System.out.println("Interrupted");
-						future.cancel(true); // Cancel thread
+					network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
+
+					try { // Sleep for 1 second
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
 					} 
 					
-					// Announce name change
-					String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
-					network.sendBroadcastMessage(nccommand); 
+					if (!um.getUsernameTaken()) {
+						prevUsername = um.getUser(); // Store previous user name
+						um.setUser(txtUserName.getText()); // Set name in UM
+						lblCurrentUsername.setText(txtUserName.getText()); // Display it
+						JOptionPane.showMessageDialog(null,
+								txtUserName.getText() + ", you have been successfully registered!");
+						// Announce name change
+						String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
+						network.sendBroadcastMessage(nccommand); 
+					}
+					
+					um.setUsernameTaken(false); // Reset flag
+					
 				}
 			}
 		});
@@ -263,13 +267,17 @@ public class WhatsChat extends JFrame implements Performable {
 						byte[] receivedData = dgpReceived.getData();
 						int length = dgpReceived.getLength();
 						String msg = new String(receivedData,0,length);
-						
 			            String[] command = msg.split("\\|"); // Split command by |
-			            //System.out.println("Command: " + command[0]);
 						if (command[0].equals("UsernameCheck")) { //UsernameCheck newUsername requester 
 							if (um.getUser().equals(command[1])) { 
 								String bmsg = "UsernameTaken|" + command[2]; // Sends taken command + requester
 								network.sendBroadcastMessage(bmsg);
+							}
+						}
+						if (command[0].equals("UsernameTaken")) {
+							if (command[1].equals(um.getUser())) { // User is requester
+								um.setUsernameTaken(true); // Set user name taken flag
+								JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
 							}
 						}
 						if (command[0].equals("NameChange")) {

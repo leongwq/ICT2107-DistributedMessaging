@@ -17,6 +17,14 @@ public class UserManagement {
 		return UserName;
 	}
 	
+	public void setUsernameTaken(boolean taken) {
+		UsernameTaken = taken;
+	}
+	
+	public boolean getUsernameTaken() {
+		return UsernameTaken;
+	}
+	
 	public void addOnlineUser(String user) {
 		if (!onlineUsersModel.contains(user)) { // Only add if user is not inside the list
 			onlineUsersModel.addElement(user);
