@@ -32,12 +32,12 @@ public class Network {
 		}
 	}
 	
-	public void connectToChat() {
+	public void connectToChat(String ip) {
 		try {
-			multicastChatGroup = InetAddress.getByName(CHAT_ADDRESS);
+			multicastChatGroup = InetAddress.getByName(ip);
 			multicastChatSocket = new MulticastSocket(PORT);
 			multicastChatSocket.joinGroup(multicastChatGroup);
-			System.out.println("Connected to Chat Group: " + CHAT_ADDRESS);
+			System.out.println("Connected to Chat Group: " + ip);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}

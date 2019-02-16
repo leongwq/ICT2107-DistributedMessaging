@@ -1,17 +1,14 @@
 package whatschat;
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
 
+import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.awt.event.ActionEvent;
@@ -19,19 +16,29 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import javax.swing.JTextPane;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import javax.swing.JList;
-import javax.swing.JLayeredPane;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 
 public class WhatsChat extends JFrame implements Performable {
 	
+	Network network = new Network();
 	UserManagement um = new UserManagement();
-	GroupManagement gm = new GroupManagement(WhatsChat.this);
-	
+	GroupManagement gm = new GroupManagement(WhatsChat.this,network);
+
 	List<String> selectedUsers;
 	
 	String prevUsername = "";
@@ -41,6 +48,7 @@ public class WhatsChat extends JFrame implements Performable {
 	private JTextField txtUserName;
 	private JTextField textField;
 	JTextArea textArea = new JTextArea();
+	JLabel currentGroupLabel = new JLabel("Current Group: -");
 	
 	/**
 	 * Launch the application.
@@ -70,14 +78,8 @@ public class WhatsChat extends JFrame implements Performable {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		Network network = new Network();
 		network.connectToBroadcast();
-		network.connectToChat(); // Connect to chat IP TODO: Removed fixed IP
-		gm.receiveChat(network);
-		
 		MulticastSocket multicastBroadcastSocket = network.getBroadcastSocket();
-		MulticastSocket multicastChatSocket = network.getChatSocket();
-		InetAddress multicastBroadcastGroup = network.getBroadcastGroup();
 				
 		txtUserName = new JTextField();
 		txtUserName.setBounds(380, 6, 179, 26);
@@ -112,33 +114,18 @@ public class WhatsChat extends JFrame implements Performable {
 				} else {
 					String command = "UsernameCheck|" + txtUserName.getText() + "|" + lblCurrentUsername.getText();
 					network.sendBroadcastMessage(command); // Checks if the username is taken by other user
+					
+					ExecutorService executor = Executors.newSingleThreadExecutor();
+					Future<String> future = executor.submit(new UsernameCheckTask(network,um));
 					try {
-						byte receiveBuf[] = new byte[1000];
-						DatagramPacket dgpReceived = new DatagramPacket(receiveBuf, receiveBuf.length);
-						multicastBroadcastSocket.setSoTimeout(2000); 
-						try {
-							multicastBroadcastSocket.receive(dgpReceived);
-							multicastBroadcastSocket.setSoTimeout(0); // Clear timeout
-							byte[] receivedData = dgpReceived.getData();
-							int length = dgpReceived.getLength();
-							String receivedMessage = new String(receivedData, 0, length);
-				            String[] response = receivedMessage.split("\\|"); // Split command by |
-				            if (response[0].equals("UsernameTaken") && response[1].equals(lblCurrentUsername.getText())) { // Username is taken and is from the requester
-								JOptionPane.showMessageDialog(new JFrame(), "Username has been taken", "Error", JOptionPane.ERROR_MESSAGE);
-				            }
-
-						} catch (SocketTimeoutException ex) {
-							multicastBroadcastSocket.setSoTimeout(0);
-							prevUsername = um.getUser(); // Store previous user name
-							um.setUser(txtUserName.getText()); // Set name in UM
-							lblCurrentUsername.setText(txtUserName.getText()); // Display it
-							JOptionPane.showMessageDialog(null,
-									txtUserName.getText() + ", you have been successfully registered!");
-
-						}
-					} catch (IOException ex) {
+						future.get(2, TimeUnit.SECONDS);
+						executor.shutdown();
+					} catch (ExecutionException | InterruptedException ex) {
 						ex.printStackTrace();
-					}
+					} catch (TimeoutException ex) { // Check if username is taken
+						System.out.println("Interrupted");
+						future.cancel(true); // Cancel thread
+					} 
 					
 					// Announce name change
 					String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
@@ -201,9 +188,9 @@ public class WhatsChat extends JFrame implements Performable {
 						// Sends invite to all selected members
 						for (int i = 0; i < selectedUsers.size(); i++) {
 							String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
+							System.out.println(IP);
 							network.sendBroadcastMessage(bmsg);
 						}
-
 					}
 				} catch (IOException ex) {
 					ex.printStackTrace();
@@ -230,6 +217,16 @@ public class WhatsChat extends JFrame implements Performable {
 		contentPane.add(lblNewLabel_2);
 		
 		JList<String> list = new JList<String>(gm.getGroups());
+		list.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JList list = (JList)e.getSource();
+				if (e.getClickCount() == 2) { // Double-click detected. Behaviour for group selection
+		            int index = list.locationToIndex(e.getPoint());
+		            gm.connectToGroup(index);
+				}
+			}
+		});
 		list.setBounds(135, 121, 183, 242);
 		contentPane.add(list);
 		
@@ -240,7 +237,7 @@ public class WhatsChat extends JFrame implements Performable {
 		JButton btnNewButton_2 = new JButton("Send");
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String chatMsg = textField.getText();
+				String chatMsg = um.getUser() + ": " + textField.getText();
 				network.sendChatMessage(chatMsg);
 			}
 		});
@@ -250,6 +247,10 @@ public class WhatsChat extends JFrame implements Performable {
 		textField.setBounds(6, 375, 553, 26);
 		contentPane.add(textField);
 		textField.setColumns(10);
+		
+		currentGroupLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+		currentGroupLabel.setBounds(456, 97, 223, 16);
+		contentPane.add(currentGroupLabel);
 		
 		new Thread(new Runnable() {
 			@Override
@@ -264,7 +265,7 @@ public class WhatsChat extends JFrame implements Performable {
 						String msg = new String(receivedData,0,length);
 						
 			            String[] command = msg.split("\\|"); // Split command by |
-			            System.out.println("Command: " + command[0]);
+			            //System.out.println("Command: " + command[0]);
 						if (command[0].equals("UsernameCheck")) { //UsernameCheck newUsername requester 
 							if (um.getUser().equals(command[1])) { 
 								String bmsg = "UsernameTaken|" + command[2]; // Sends taken command + requester
@@ -293,7 +294,7 @@ public class WhatsChat extends JFrame implements Performable {
 						if (command[0].equals("GroupInvite")) { // Group Invite command. GroupInvite invites groupname ip
 							if (command[1].equals(um.getUser())) { // If this command is for the user
 								// Add the group to own data
-								gm.addGroup(command[2], command[2]);
+								gm.addGroup(command[2], command[3]);
 							}
 						}
 						
@@ -308,5 +309,10 @@ public class WhatsChat extends JFrame implements Performable {
 	@Override
 	public void appendToChat(String str) {
 		textArea.append(str);
+	}
+	
+	@Override
+	public void updateCurrentGroup(String str) {
+		currentGroupLabel.setText("Current Group: " + str);
 	}
 }

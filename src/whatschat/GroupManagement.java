@@ -11,16 +11,24 @@ import javax.swing.DefaultListModel;
 public class GroupManagement{
 	
 	private Performable perf;
+	private Network network;
 		
 	private DefaultListModel<String> groupsModel = new DefaultListModel<String>();
 	private Map<String, String> IPMapping = new HashMap<String, String>();
+	private String activeGroup = "";
 	
-	public GroupManagement(Performable perf) {
+	public GroupManagement(Performable perf, Network network) {
         this.perf = perf;
+        this.network = network;
     }
 
 	public void addGroup(String groupName, String groupIP) {
 		if (!groupsModel.contains(groupName)) { // Group name is not taken
+			if (groupsModel.isEmpty()) { // When user has no group, auto joins the first group
+				perf.updateCurrentGroup(groupName); // Update UI
+				network.connectToChat(groupIP); // Connect to chat IP
+				receiveChat();
+			}
 			IPMapping.put(groupName,groupIP);
 			groupsModel.addElement(groupName); 
 		}
@@ -44,7 +52,12 @@ public class GroupManagement{
 		}
 	}
 	
-	public void receiveChat(Network network) {
+	public void connectToGroup(int index) {
+		String ip = IPMapping.get(groupsModel.getElementAt(index));
+		network.connectToChat(ip); // Connect to chat IP
+	}
+	
+	public void receiveChat() {
 		MulticastSocket multicastChatSocket = network.getChatSocket();
 
 		new Thread(new Runnable() {
