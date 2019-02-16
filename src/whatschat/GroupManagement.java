@@ -15,12 +15,22 @@ public class GroupManagement{
 		
 	private DefaultListModel<String> groupsModel = new DefaultListModel<String>();
 	private Map<String, String> IPMapping = new HashMap<String, String>();
+	private boolean GroupnameTaken = false;
 	private String activeGroup = "";
+	
 	
 	public GroupManagement(Performable perf, Network network) {
         this.perf = perf;
         this.network = network;
     }
+	
+	public void setGroupnameTaken(boolean taken) {
+		GroupnameTaken = taken;
+	}
+	
+	public boolean getGroupnameTaken() {
+		return GroupnameTaken;
+	}
 
 	public void addGroup(String groupName, String groupIP) {
 		if (!groupsModel.contains(groupName)) { // Group name is not taken

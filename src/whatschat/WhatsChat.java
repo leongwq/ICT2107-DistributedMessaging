@@ -16,16 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.swing.JList;
 import javax.swing.SwingConstants;
@@ -38,6 +30,7 @@ public class WhatsChat extends JFrame implements Performable {
 	Network network = new Network();
 	UserManagement um = new UserManagement();
 	GroupManagement gm = new GroupManagement(WhatsChat.this,network);
+	String groupName;
 
 	List<String> selectedUsers;
 	
@@ -131,9 +124,10 @@ public class WhatsChat extends JFrame implements Performable {
 						String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
 						network.sendBroadcastMessage(nccommand); 
 					}
-					
+					else {
+						JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					}
 					um.setUsernameTaken(false); // Reset flag
-					
 				}
 			}
 		});
@@ -165,42 +159,35 @@ public class WhatsChat extends JFrame implements Performable {
 		btnCreateGroup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
-				String groupName = JOptionPane.showInputDialog("Enter a group name");
-				String command = "GroupnameCheck|" + groupName;
+				groupName = JOptionPane.showInputDialog("Enter a group name");
+				String command = "GroupnameCheck|" + groupName + "|" + um.getUser();
 				network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
-				try {
-					byte receiveBuf[] = new byte[1000];
-					DatagramPacket dgpReceived = new DatagramPacket(receiveBuf, receiveBuf.length);
-					multicastBroadcastSocket.setSoTimeout(2000); 
-					try {
-						multicastBroadcastSocket.receive(dgpReceived);
-						multicastBroadcastSocket.setSoTimeout(0); // Clear timeout
-						byte[] receivedData = dgpReceived.getData();
-						int length = dgpReceived.getLength();
-						String receivedMessage = new String(receivedData, 0, length);
-			            String[] response = receivedMessage.split("\\|"); // Split command by |
-			            if (response[0].equals("GroupnameTaken") && response[1].equals(groupName)) { // Group name is taken and is from the requester
-							JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE);
-			            }
-
-					} catch (SocketTimeoutException ex) {
-						multicastBroadcastSocket.setSoTimeout(0);
-						String IP = network.getRandomIP();
-						gm.addGroup(groupName, IP);
-						JOptionPane.showMessageDialog(null,
-								groupName + ", have been successfully created!");
-						// Sends invite to all selected members
-						for (int i = 0; i < selectedUsers.size(); i++) {
-							String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
-							System.out.println(IP);
-							network.sendBroadcastMessage(bmsg);
-						}
+				
+				try { // Sleep for 1 second
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				} 
+				
+				if (!gm.getGroupnameTaken()) {
+					String IP = network.getRandomIP();
+					gm.addGroup(groupName, IP);
+					JOptionPane.showMessageDialog(null,
+							groupName + ", have been successfully created!");
+					// Sends invite to all selected members
+					for (int i = 0; i < selectedUsers.size(); i++) {
+						String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
+						System.out.println(IP);
+						network.sendBroadcastMessage(bmsg);
 					}
-				} catch (IOException ex) {
-					ex.printStackTrace();
 				}
+				else {
+					JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+				}
+				gm.setGroupnameTaken(false); // Reset flag
 			}
 		});
+		
 		btnCreateGroup.setBounds(6, 62, 117, 29);
 		contentPane.add(btnCreateGroup);
 		
@@ -277,7 +264,6 @@ public class WhatsChat extends JFrame implements Performable {
 						if (command[0].equals("UsernameTaken")) {
 							if (command[1].equals(um.getUser())) { // User is requester
 								um.setUsernameTaken(true); // Set user name taken flag
-								JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
 							}
 						}
 						if (command[0].equals("NameChange")) {
@@ -295,8 +281,13 @@ public class WhatsChat extends JFrame implements Performable {
 						}
 						if (command[0].equals("GroupnameCheck")) { // Check if group name is taken
 							if (gm.isGroupNameTaken(command[1])) {
-								String bmsg = "GroupnameTaken|" + command[1]; // Sends taken command + requested group name
+								String bmsg = "GroupnameTaken|" + command[1]; // Sends taken command + requested group name + requester
 								network.sendBroadcastMessage(bmsg);
+							}
+						}
+						if (command[0].equals("GroupnameTaken")) {
+							if (command[1].equals(groupName)) { // User is requester
+								gm.setGroupnameTaken(true); // Set group name taken flag
 							}
 						}
 						if (command[0].equals("GroupInvite")) { // Group Invite command. GroupInvite invites groupname ip

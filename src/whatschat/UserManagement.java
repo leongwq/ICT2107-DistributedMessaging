@@ -5,7 +5,6 @@ import javax.swing.DefaultListModel;
 public class UserManagement {
 	
 	private String UserName = "";
-	private String status = "OFFLINE";
 	private boolean UsernameTaken = false;
 	private DefaultListModel<String> onlineUsersModel = new DefaultListModel<String>();
 
