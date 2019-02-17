@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListModel;
 
@@ -16,7 +17,8 @@ public class GroupManagement{
 	private DefaultListModel<String> groupsModel = new DefaultListModel<String>();
 	private Map<String, String> IPMapping = new HashMap<String, String>();
 	private boolean GroupnameTaken = false;
-	private String activeGroup = "";
+	private volatile boolean groupChanged = false;
+	Thread t;
 	
 	
 	public GroupManagement(Performable perf, Network network) {
@@ -37,7 +39,7 @@ public class GroupManagement{
 			if (groupsModel.isEmpty()) { // When user has no group, auto joins the first group
 				perf.updateCurrentGroup(groupName); // Update UI
 				network.connectToChat(groupIP); // Connect to chat IP
-				receiveChat();
+				t = receiveChat(); // Receives thread object
 			}
 			IPMapping.put(groupName,groupIP);
 			groupsModel.addElement(groupName); 
@@ -62,20 +64,33 @@ public class GroupManagement{
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void connectToGroup(int index) {
 		String ip = IPMapping.get(groupsModel.getElementAt(index));
 		network.connectToChat(ip); // Connect to chat IP
+		
+		t.stop(); // DIE NOW!
+		
+		//Let's wait for the thread to die
+        try {
+			TimeUnit.MILLISECONDS.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+                
+		t = receiveChat();
+		perf.updateCurrentGroup(groupsModel.getElementAt(index)); // Update UI
 	}
 	
-	public void receiveChat() {
+	public Thread receiveChat() {
 		MulticastSocket multicastChatSocket = network.getChatSocket();
-
-		new Thread(new Runnable() {
+		    
+		Thread t = new Thread(new Runnable() {			
 			@Override
 			public void run() {
 				byte buf1[] = new byte[1000];
 				DatagramPacket dgpReceived = new DatagramPacket(buf1, buf1.length);
-				while (true) {
+				while (groupChanged == false) {
 					try {
 						multicastChatSocket.receive(dgpReceived);
 						byte[] receivedData = dgpReceived.getData();
@@ -88,8 +103,11 @@ public class GroupManagement{
 					}
 				}
 			}
-			
-		}).start();
+		});
+		
+		t.start();
+		return t;
 	}
 
 }
+

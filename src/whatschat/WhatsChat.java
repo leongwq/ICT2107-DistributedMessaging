@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
-import java.net.SocketTimeoutException;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -23,7 +22,6 @@ import javax.swing.JList;
 import javax.swing.SwingConstants;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 
 public class WhatsChat extends JFrame implements Performable {
 	
@@ -297,7 +295,6 @@ public class WhatsChat extends JFrame implements Performable {
 							}
 						}
 						
-			            
 					} catch (IOException ex) {
 						ex.printStackTrace();
 					}
