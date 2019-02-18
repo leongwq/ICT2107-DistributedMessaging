@@ -3,8 +3,10 @@ package whatschat;
 import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -23,6 +25,13 @@ import javax.swing.JList;
 import javax.swing.SwingConstants;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import java.awt.Color;
+import javax.swing.JTabbedPane;
+import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
 
 
 public class WhatsChat extends JFrame implements Performable {
@@ -34,13 +43,17 @@ public class WhatsChat extends JFrame implements Performable {
 
 	List<String> selectedUsers;
 	
+	Border border = BorderFactory.createLineBorder(Color.BLACK, 1);
+	
 	String prevUsername = "";
+	String name = "";
 	boolean registered = false;
 	
 	private JPanel contentPane;
-	private JTextField txtUserName;
+//	private JTextField txtUserName;
 	private JTextField textField;
 	JTextArea textArea = new JTextArea();
+	
 	JLabel currentGroupLabel = new JLabel("Current Group: -");
 	
 	/**
@@ -65,7 +78,19 @@ public class WhatsChat extends JFrame implements Performable {
 	 */
 	public WhatsChat() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 685, 431);
+		setBounds(100, 100, 1090, 675);
+		
+		JMenuBar menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+		
+		JMenu mnUser = new JMenu("User");
+		menuBar.add(mnUser);
+		
+		JMenuItem RegisterUsername = new JMenuItem("Register");
+		mnUser.add(RegisterUsername);
+		
+		JMenu mnGroupManagement = new JMenu("Group Management");
+		menuBar.add(mnGroupManagement);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -73,18 +98,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		network.connectToBroadcast();
 		MulticastSocket multicastBroadcastSocket = network.getBroadcastSocket();
-				
-		txtUserName = new JTextField();
-		txtUserName.setBounds(380, 6, 179, 26);
-		contentPane.add(txtUserName);
-		txtUserName.setColumns(10);
-		
-		textField = new JTextField();
-		
-		JLabel lblNewLabel = new JLabel("Current Username:");
-		JLabel lblCurrentUsername = new JLabel("NotRegistered");
 		JButton btnRegisterUser = new JButton("Register User");
-		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers());
 
 		// Get all current online user
 		String command = "KnockKnock";
@@ -98,64 +112,52 @@ public class WhatsChat extends JFrame implements Performable {
 				network.sendBroadcastMessage(command);
 		    }
 		});
-
-
-		btnRegisterUser.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(txtUserName.getText().trim().equals("")){
-					JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
-				} else {
-					String command = "UsernameCheck|" + txtUserName.getText() + "|" + lblCurrentUsername.getText();
-					network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
-
-					try { // Sleep for 1 second
-						Thread.sleep(1000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					} 
-					
-					if (!um.getUsernameTaken()) {
-						prevUsername = um.getUser(); // Store previous user name
-						um.setUser(txtUserName.getText()); // Set name in UM
-						lblCurrentUsername.setText(txtUserName.getText()); // Display it
-						JOptionPane.showMessageDialog(null,
-								txtUserName.getText() + ", you have been successfully registered!");
-						// Announce name change
-						String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
-						network.sendBroadcastMessage(nccommand); 
-					}
-					else {
-						JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
-					}
-					um.setUsernameTaken(false); // Reset flag
-				}
-			}
-		});
-		btnRegisterUser.setBounds(562, 6, 117, 29);
-		contentPane.add(btnRegisterUser);
 		
-		lblNewLabel.setBounds(6, 11, 133, 16);
-		contentPane.add(lblNewLabel);
+		JButton btnCreateGroup = new JButton("Create");
 		
-		lblCurrentUsername.setBounds(131, 11, 237, 16);
-		contentPane.add(lblCurrentUsername);
+		btnCreateGroup.setBounds(15, 0, 117, 29);
+		contentPane.add(btnCreateGroup);
 		
-		textArea.setBounds(330, 121, 349, 242);
-		contentPane.add(textArea);
+		JButton btnNewButton = new JButton("Edit");
+		btnNewButton.setBounds(147, 0, 117, 29);
+		contentPane.add(btnNewButton);
+		
+		JButton btnNewButton_1 = new JButton("Delete");
+		btnNewButton_1.setBounds(251, 0, 117, 29);
+		contentPane.add(btnNewButton_1);
+		
+		JPanel User = new JPanel();
+		User.setBackground(Color.WHITE);
+		User.setBounds(15, 26, 260, 556);
+		contentPane.add(User);
+		User.setLayout(null);
+		
+		JLabel image = new JLabel("");
+		image.setIcon(new ImageIcon("img/profile.png"));
+		image.setBounds(77, 16, 104, 99);
+		User.add(image);
 		
 		Random rand = new Random();
 		String user = "Eva" + rand.nextInt(2000);
 		um.setUser(user);
+		
+		JLabel lblCurrentUsername = new JLabel("NotRegistered");
+		lblCurrentUsername.setBounds(104, 132, 87, 20);
+		User.add(lblCurrentUsername);
 		lblCurrentUsername.setText(user);
 		
-		listOnlineUsers.setBounds(6, 121, 117, 242);
-		contentPane.add(listOnlineUsers);
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setBounds(15, 184, 230, 356);
+		User.add(tabbedPane);
 		
-		JLabel lblNewLabel_1 = new JLabel("Group Management");
-		lblNewLabel_1.setBounds(6, 40, 133, 16);
-		contentPane.add(lblNewLabel_1);
+		JPanel Online = new JPanel();
+		Online.setBackground(Color.WHITE);
+		tabbedPane.addTab("Online", null, Online, null);
+		Online.setLayout(null);
+		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers());
+		listOnlineUsers.setBounds(0, 0, 225, 322);
+		Online.add(listOnlineUsers);
 		
-		JButton btnCreateGroup = new JButton("Create");
 		btnCreateGroup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
@@ -188,27 +190,52 @@ public class WhatsChat extends JFrame implements Performable {
 			}
 		});
 		
-		btnCreateGroup.setBounds(6, 62, 117, 29);
-		contentPane.add(btnCreateGroup);
+		JPanel group = new JPanel();
+		group.setBackground(Color.WHITE);
+		tabbedPane.addTab("Group", null, group, null);
+		group.setLayout(null);
 		
-		JButton btnNewButton = new JButton("Edit");
-		btnNewButton.setBounds(118, 62, 117, 29);
-		contentPane.add(btnNewButton);
+		JList<String> listGroup = new JList<String>(gm.getGroups());
+		listGroup.setBounds(0, 0, 225, 322);
+		group.add(listGroup);
+		listGroup.setBackground(Color.WHITE);
 		
-		JButton btnNewButton_1 = new JButton("Delete");
-		btnNewButton_1.setBounds(228, 62, 117, 29);
-		contentPane.add(btnNewButton_1);
+		JPanel panel = new JPanel();
+		panel.setBackground(Color.WHITE);
+		panel.setBounds(333, 29, 741, 553);
+		contentPane.add(panel);
+		panel.setLayout(null);
 		
-		JLabel lblOnlineUsers = new JLabel("Online Users");
-		lblOnlineUsers.setBounds(6, 97, 91, 16);
-		contentPane.add(lblOnlineUsers);
+//		txtUserName = new JTextField();
+//		txtUserName.setBounds(409, 108, 179, 26);
+//		contentPane.add(txtUserName);
+//		txtUserName.setColumns(10);
 		
-		JLabel lblNewLabel_2 = new JLabel("Groups");
-		lblNewLabel_2.setBounds(131, 97, 61, 16);
-		contentPane.add(lblNewLabel_2);
+		textField = new JTextField();
+		textField.setBackground(new Color(248, 248, 255));
+		textField.setBounds(15, 495, 553, 26);
+		panel.add(textField);
+		textField.setColumns(10);
 		
-		JList<String> list = new JList<String>(gm.getGroups());
-		list.addMouseListener(new MouseAdapter() {
+		JButton btnNewButton_2 = new JButton("Send");
+		btnNewButton_2.setBounds(583, 494, 117, 29);
+		panel.add(btnNewButton_2);
+		textArea.setEditable(false);
+		textArea.setBackground(new Color(248, 248, 255));
+		textArea.setBorder(border);
+		textArea.setBounds(15, 52, 695, 419);
+		panel.add(textArea);
+		currentGroupLabel.setBounds(15, 16, 129, 20);
+		panel.add(currentGroupLabel);
+		
+		currentGroupLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnNewButton_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String chatMsg = um.getUser() + ": " + textField.getText();
+				network.sendChatMessage(chatMsg);
+			}
+		});
+		listGroup.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				JList list = (JList)e.getSource();
@@ -218,30 +245,48 @@ public class WhatsChat extends JFrame implements Performable {
 				}
 			}
 		});
-		list.setBounds(135, 121, 183, 242);
-		contentPane.add(list);
+		//
+
+		//Getting inputs from user to create username
+				RegisterUsername.addActionListener (new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						name = JOptionPane.showInputDialog("Name");
+//						String msg = name+" have been successfully registered!";
+//						JOptionPane.showMessageDialog(null, msg);
+//						lblCurrentUsername.setText(name);
+						
+						if(name.equals("")){
+							JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
+						} else {
+							String command = "UsernameCheck|" + name + "|" + lblCurrentUsername.getText();;
+							network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
+
+							try { // Sleep for 1 second
+								Thread.sleep(1000);
+							} catch (InterruptedException e1) {
+								e1.printStackTrace();
+							} 
+							
+							if (!um.getUsernameTaken()) {
+								prevUsername = um.getUser(); // Store previous user name
+								um.setUser(name); // Set name in UM
+								lblCurrentUsername.setText(name); // Display it
+								JOptionPane.showMessageDialog(null,
+										name+ ", you have been successfully registered!");
+								// Announce name change
+								String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
+								network.sendBroadcastMessage(nccommand); 
+							}
+							else {
+								JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+							}
+							um.setUsernameTaken(false); // Reset flag
+						}
+						
+						
+					}
+				});
 		
-		JLabel lblConversation = new JLabel("Conversation");
-		lblConversation.setBounds(330, 97, 91, 16);
-		contentPane.add(lblConversation);
-		
-		JButton btnNewButton_2 = new JButton("Send");
-		btnNewButton_2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String chatMsg = um.getUser() + ": " + textField.getText();
-				network.sendChatMessage(chatMsg);
-			}
-		});
-		btnNewButton_2.setBounds(562, 375, 117, 29);
-		contentPane.add(btnNewButton_2);
-		
-		textField.setBounds(6, 375, 553, 26);
-		contentPane.add(textField);
-		textField.setColumns(10);
-		
-		currentGroupLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-		currentGroupLabel.setBounds(456, 97, 223, 16);
-		contentPane.add(currentGroupLabel);
 		
 		new Thread(new Runnable() {
 			@Override
