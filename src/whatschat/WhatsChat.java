@@ -249,7 +249,15 @@ public class WhatsChat extends JFrame implements Performable {
 		JButton btnNewMember = new JButton("Add Member");
 		btnNewMember.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				// Sends invite to all selected members
+				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+				boolean success = gm.addMembers(selectedUsers);
+				if (success) {
+					JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
+				}
+				else {
+					JOptionPane.showMessageDialog(new JFrame(), "Unable to invite. Make sure you are in a group", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+				}
 			}
 		});
 		btnNewMember.setBounds(130, 0, 117, 29);
@@ -271,7 +279,6 @@ public class WhatsChat extends JFrame implements Performable {
 		        }
 			}
 		});
-		//
 
 		//Getting inputs from user to create user name
 				RegisterUsername.addActionListener (new ActionListener() {
@@ -381,7 +388,7 @@ public class WhatsChat extends JFrame implements Performable {
 	}
 	
 	@Override
-	public void updateCurrentGroup(String str) {
-		currentGroupLabel.setText("Current Group: " + str);
+	public void updateCurrentGroup() {
+		currentGroupLabel.setText("Current Group: " + gm.getCurrentGroup());
 	}
 }

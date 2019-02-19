@@ -47,7 +47,8 @@ public class GroupManagement{
 	public void addGroup(String groupName, String groupIP) {
 		if (!groupsModel.contains(groupName)) { // Group name is not taken
 			if (groupsModel.isEmpty()) { // When user has no group, auto joins the first group
-				perf.updateCurrentGroup(groupName); // Update UI
+				currentGroup = groupName;
+				perf.updateCurrentGroup(); // Update UI
 				network.connectToChat(groupIP); // Connect to chat IP
 				t = receiveChat(); // Receives thread object
 			}
@@ -89,7 +90,17 @@ public class GroupManagement{
 		}
                 
 		t = receiveChat();
-		perf.updateCurrentGroup(groupsModel.getElementAt(index)); // Update UI
+		currentGroup = groupsModel.getElementAt(index);
+		perf.updateCurrentGroup(); // Update UI
+	}
+	
+	public boolean addMembers(List<String> selectedUsers) {
+		// Lets find the current group the user is on
+		if (getCurrentGroup() == null) {
+			return false;
+		}
+		inviteMembers(selectedUsers,getCurrentGroup(), IPMapping.get(getCurrentGroup()));
+		return true;
 	}
 	
 	public void inviteMembers(List<String> selectedUsers, String groupName, String IP) {
