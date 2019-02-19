@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +19,7 @@ public class GroupManagement{
 	private Map<String, String> IPMapping = new HashMap<String, String>();
 	private boolean GroupnameTaken = false;
 	private volatile boolean groupChanged = false;
+	private String currentGroup;
 	Thread t;
 	
 	
@@ -25,6 +27,14 @@ public class GroupManagement{
         this.perf = perf;
         this.network = network;
     }
+	
+	public void setCurrentGroup(String group) {
+		currentGroup = group;
+	}
+	
+	public String getCurrentGroup() {
+		return currentGroup;
+	}
 	
 	public void setGroupnameTaken(boolean taken) {
 		GroupnameTaken = taken;
@@ -80,6 +90,15 @@ public class GroupManagement{
                 
 		t = receiveChat();
 		perf.updateCurrentGroup(groupsModel.getElementAt(index)); // Update UI
+	}
+	
+	public void inviteMembers(List<String> selectedUsers, String groupName, String IP) {
+		// Sends invite to all selected members
+		for (int i = 0; i < selectedUsers.size(); i++) {
+			String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
+			System.out.println(IP);
+			network.sendBroadcastMessage(bmsg);
+		}
 	}
 	
 	public Thread receiveChat() {

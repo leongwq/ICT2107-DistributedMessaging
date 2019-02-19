@@ -117,11 +117,11 @@ public class WhatsChat extends JFrame implements Performable {
 		contentPane.add(btnCreateGroup);
 		
 		JButton btnNewButton = new JButton("Edit");
-		btnNewButton.setBounds(147, 0, 117, 29);
+		btnNewButton.setBounds(259, 0, 117, 29);
 		contentPane.add(btnNewButton);
 		
 		JButton btnNewButton_1 = new JButton("Delete");
-		btnNewButton_1.setBounds(251, 0, 117, 29);
+		btnNewButton_1.setBounds(363, 0, 117, 29);
 		contentPane.add(btnNewButton_1);
 		
 		JPanel User = new JPanel();
@@ -175,11 +175,7 @@ public class WhatsChat extends JFrame implements Performable {
 					JOptionPane.showMessageDialog(null,
 							groupName + ", have been successfully created!");
 					// Sends invite to all selected members
-					for (int i = 0; i < selectedUsers.size(); i++) {
-						String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
-						System.out.println(IP);
-						network.sendBroadcastMessage(bmsg);
-					}
+					gm.inviteMembers(selectedUsers, groupName,IP);
 				}
 				else {
 					JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
@@ -227,6 +223,15 @@ public class WhatsChat extends JFrame implements Performable {
 		panel.add(currentGroupLabel);
 		
 		currentGroupLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+		
+		JButton btnNewMember = new JButton("Add Member");
+		btnNewMember.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
+		btnNewMember.setBounds(130, 0, 117, 29);
+		contentPane.add(btnNewMember);
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String chatMsg = um.getUser() + ": " + textField.getText();
