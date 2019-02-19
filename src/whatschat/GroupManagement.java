@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListModel;
+import redis.clients.jedis.Jedis;
 
 public class GroupManagement{
 	
@@ -20,8 +21,8 @@ public class GroupManagement{
 	private boolean GroupnameTaken = false;
 	private volatile boolean groupChanged = false;
 	private String currentGroup;
-	Thread t;
-	
+	Thread t;	
+	JedisConnection jedis = new JedisConnection(); // Create Jedis object
 	
 	public GroupManagement(Performable perf, Network network) {
         this.perf = perf;
@@ -92,6 +93,9 @@ public class GroupManagement{
 		t = receiveChat();
 		currentGroup = groupsModel.getElementAt(index);
 		perf.updateCurrentGroup(); // Update UI
+		perf.clearChat();
+		List<String> conversations = jedis.getChatContent(ip);
+		perf.updateChatWithHistory(conversations);
 	}
 	
 	public boolean addMembers(List<String> selectedUsers) {

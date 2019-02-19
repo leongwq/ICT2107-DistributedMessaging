@@ -6,12 +6,15 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.Random;
 
+import redis.clients.jedis.Jedis;
+
 public class Network {
 	
 	private String BROADCAST_ADDRESS = "230.1.1.1";
-	private String CHAT_ADDRESS = "230.2.1.1";
+	private String CHAT_ADDRESS;;
 	private int PORT = 6789;
 	
+	JedisConnection jedis = new JedisConnection(); // Create Jedis object
 
 	// Broadcast Socket
 	MulticastSocket multicastBroadcastSocket = null;
@@ -37,6 +40,7 @@ public class Network {
 			multicastChatGroup = InetAddress.getByName(ip);
 			multicastChatSocket = new MulticastSocket(PORT);
 			multicastChatSocket.joinGroup(multicastChatGroup);
+			CHAT_ADDRESS = ip;
 			System.out.println("Connected to Chat Group: " + ip);
 		} catch (IOException ex) {
 			ex.printStackTrace();
@@ -73,6 +77,7 @@ public class Network {
 			DatagramPacket dgpSend = new DatagramPacket(buf, buf.length, multicastChatGroup,
 					PORT);
 			multicastChatSocket.send(dgpSend);
+			jedis.pushChatContent(CHAT_ADDRESS, msg);
 			System.out.println("Sent to chat: " + msg);
 		} catch (IOException ex) {
 			ex.printStackTrace();
