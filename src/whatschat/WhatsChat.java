@@ -153,13 +153,25 @@ public class WhatsChat extends JFrame implements Performable {
 		tabbedPane.addTab("Online", null, Online, null);
 		Online.setLayout(null);
 		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers());
-		listOnlineUsers.setBounds(0, 0, 225, 322);
+		listOnlineUsers.setBounds(0, 28, 209, 276);
 		Online.add(listOnlineUsers);
+		
+		JButton btnClearOnlineUsers = new JButton("Clear Selection");
+		btnClearOnlineUsers.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				listOnlineUsers.clearSelection();
+			}
+		});
+		btnClearOnlineUsers.setBounds(0, 0, 209, 29);
+		Online.add(btnClearOnlineUsers);
 		
 		btnCreateGroup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
 				groupName = JOptionPane.showInputDialog("Enter a group name");
+				
+				if (groupName == null) { return; } // If there is no input, exit the method
+				
 				String command = "GroupnameCheck|" + groupName + "|" + um.getUser();
 				network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
 				
@@ -176,6 +188,7 @@ public class WhatsChat extends JFrame implements Performable {
 							groupName + ", have been successfully created!");
 					// Sends invite to all selected members
 					gm.inviteMembers(selectedUsers, groupName,IP);
+					listOnlineUsers.clearSelection(); // Clears selection for online users
 				}
 				else {
 					JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
@@ -190,9 +203,18 @@ public class WhatsChat extends JFrame implements Performable {
 		group.setLayout(null);
 		
 		JList<String> listGroup = new JList<String>(gm.getGroups());
-		listGroup.setBounds(0, 0, 225, 322);
+		listGroup.setBounds(0, 33, 203, 271);
 		group.add(listGroup);
 		listGroup.setBackground(Color.WHITE);
+		
+		JButton btnClearGroupList = new JButton("Clear Selection");
+		btnClearGroupList.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				listGroup.clearSelection();
+			}
+		});
+		btnClearGroupList.setBounds(0, 0, 209, 29);
+		group.add(btnClearGroupList);
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
@@ -242,15 +264,16 @@ public class WhatsChat extends JFrame implements Performable {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				JList list = (JList)e.getSource();
-				if (e.getClickCount() == 2) { // Double-click detected. Behaviour for group selection
+				if (e.getClickCount() == 2) { // Double-click detected. Behavior for group selection
 		            int index = list.locationToIndex(e.getPoint());
 		            gm.connectToGroup(index);
-				}
+		            listGroup.clearSelection();
+		        }
 			}
 		});
 		//
 
-		//Getting inputs from user to create username
+		//Getting inputs from user to create user name
 				RegisterUsername.addActionListener (new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						name = JOptionPane.showInputDialog("Name");
