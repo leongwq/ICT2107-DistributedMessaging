@@ -76,7 +76,7 @@ public class WhatsChat extends JFrame implements Performable {
 	 */
 	public WhatsChat() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1090, 675);
+		setBounds(100, 100, 789, 564);
 		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -126,13 +126,13 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		JPanel User = new JPanel();
 		User.setBackground(Color.WHITE);
-		User.setBounds(15, 26, 260, 556);
+		User.setBounds(15, 26, 207, 439);
 		contentPane.add(User);
 		User.setLayout(null);
 		
 		JLabel image = new JLabel("");
 		image.setIcon(new ImageIcon("img/profile.png"));
-		image.setBounds(77, 16, 104, 99);
+		image.setBounds(54, 17, 104, 99);
 		User.add(image);
 		
 		Random rand = new Random();
@@ -140,12 +140,12 @@ public class WhatsChat extends JFrame implements Performable {
 		um.setUser(user);
 		
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
-		lblCurrentUsername.setBounds(104, 132, 87, 20);
+		lblCurrentUsername.setBounds(70, 132, 87, 20);
 		User.add(lblCurrentUsername);
 		lblCurrentUsername.setText(user);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(15, 184, 230, 356);
+		tabbedPane.setBounds(15, 184, 181, 244);
 		User.add(tabbedPane);
 		
 		JPanel Online = new JPanel();
@@ -153,7 +153,7 @@ public class WhatsChat extends JFrame implements Performable {
 		tabbedPane.addTab("Online", null, Online, null);
 		Online.setLayout(null);
 		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers());
-		listOnlineUsers.setBounds(0, 0, 225, 322);
+		listOnlineUsers.setBounds(0, 0, 176, 290);
 		Online.add(listOnlineUsers);
 		
 		btnCreateGroup.addActionListener(new ActionListener() {
@@ -196,7 +196,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
-		panel.setBounds(333, 29, 741, 553);
+		panel.setBounds(237, 29, 517, 436);
 		contentPane.add(panel);
 		panel.setLayout(null);
 		
@@ -207,17 +207,17 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		textField = new JTextField();
 		textField.setBackground(new Color(248, 248, 255));
-		textField.setBounds(15, 495, 553, 26);
+		textField.setBounds(15, 398, 353, 26);
 		panel.add(textField);
 		textField.setColumns(10);
 		
 		JButton btnNewButton_2 = new JButton("Send");
-		btnNewButton_2.setBounds(583, 494, 117, 29);
+		btnNewButton_2.setBounds(380, 397, 117, 29);
 		panel.add(btnNewButton_2);
 		textArea.setEditable(false);
 		textArea.setBackground(new Color(248, 248, 255));
 		textArea.setBorder(border);
-		textArea.setBounds(15, 52, 695, 419);
+		textArea.setBounds(15, 52, 482, 315);
 		panel.add(textArea);
 		currentGroupLabel.setBounds(15, 16, 129, 20);
 		panel.add(currentGroupLabel);
