@@ -52,6 +52,9 @@ public class GroupManagement{
 				perf.updateCurrentGroup(); // Update UI
 				network.connectToChat(groupIP); // Connect to chat IP
 				t = receiveChat(); // Receives thread object
+				perf.clearChat();
+				List<String> conversations = jedis.getChatContent(groupIP);
+				perf.updateChatWithHistory(conversations);
 			}
 			IPMapping.put(groupName,groupIP);
 			groupsModel.addElement(groupName); 
