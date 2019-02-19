@@ -5,9 +5,6 @@ import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.concurrent.Callable;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 public class UsernameCheckTask implements Callable<String>{
 	
 	private Network network;
