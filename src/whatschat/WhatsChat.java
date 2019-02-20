@@ -282,8 +282,8 @@ public class WhatsChat extends JFrame implements Performable {
 		JPopupMenu popupMenu = new JPopupMenu();
 		addPopup(listGroup, popupMenu);
 		
-		JMenuItem mntmCreateuItem = new JMenuItem("Create");
-		popupMenu.add(mntmCreateuItem);
+		JMenuItem details = new JMenuItem("Details");
+		popupMenu.add(details);
 		
 		JButton btnClearGroupList = new JButton("Clear Selection");
 		btnClearGroupList.addActionListener(new ActionListener() {
@@ -293,6 +293,16 @@ public class WhatsChat extends JFrame implements Performable {
 		});
 		btnClearGroupList.setBounds(0, 0, 209, 29);
 		group.add(btnClearGroupList);
+		
+		JPanel Chat = new JPanel();
+		Chat.setBackground(new Color(248, 248, 255));
+		tabbedPane.addTab("Chat", null, Chat, null);
+		Chat.setLayout(null);
+		
+		JList list_1 = new JList();
+		list_1.setBackground(new Color(248, 248, 255));
+		list_1.setBounds(0, 0, 188, 243);
+		Chat.add(list_1);
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
@@ -379,11 +389,10 @@ public class WhatsChat extends JFrame implements Performable {
 							um.setUsernameTaken(false); // Reset flag
 						}
 						
-						
 					}
 				});
 				
-		//Add member to existing group
+				//Add member to existing group
 				btnNewMember.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						// Sends invite to all selected members
@@ -411,7 +420,16 @@ public class WhatsChat extends JFrame implements Performable {
 						}
 					}
 				});
-		
+				
+				//Get group details
+				details.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						String userGroup = "CheckMember|";
+						network.sendBroadcastMessage(userGroup); 
+					
+					}
+				});
+				
 		
 		new Thread(new Runnable() {
 			@Override
@@ -425,46 +443,65 @@ public class WhatsChat extends JFrame implements Performable {
 						int length = dgpReceived.getLength();
 						String msg = new String(receivedData,0,length);
 			            String[] command = msg.split("\\|"); // Split command by |
+			            
+			            //commands
+			            
 						if (command[0].equals("UsernameCheck")) { //UsernameCheck newUsername requester 
 							if (um.getUser().equals(command[1])) { 
 								String bmsg = "UsernameTaken|" + command[2]; // Sends taken command + requester
 								network.sendBroadcastMessage(bmsg);
 							}
 						}
+						
 						if (command[0].equals("UsernameTaken")) {
 							if (command[1].equals(um.getUser())) { // User is requester
 								um.setUsernameTaken(true); // Set user name taken flag
 							}
 						}
+						
 						if (command[0].equals("NameChange")) {
 							um.changeName(command[1], command[2]);
 						}
+						
 						if (command[0].equals("KnockKnock")) {
 							String bmsg = "Hello|" + um.getUser(); // Sends hello response with user name
 							network.sendBroadcastMessage(bmsg);
 						}
+						
 						if (command[0].equals("Hello")) {
 							um.addOnlineUser(command[1]); // Add user to online user model
 						}
+						
 						if (command[0].equals("Bye")) { // Going offline
 							um.removeOnlineUser(command[1]); // Remove offline user from user model
 						}
+						
 						if (command[0].equals("GroupnameCheck")) { // Check if group name is taken
 							if (gm.isGroupNameTaken(command[1])) {
 								String bmsg = "GroupnameTaken|" + command[1]; // Sends taken command + requested group name + requester
 								network.sendBroadcastMessage(bmsg);
 							}
 						}
+						
 						if (command[0].equals("GroupnameTaken")) {
 							if (command[1].equals(groupName)) { // User is requester
 								gm.setGroupnameTaken(true); // Set group name taken flag
 							}
 						}
+						
 						if (command[0].equals("GroupInvite")) { // Group Invite command. GroupInvite invites groupname ip
 							if (command[1].equals(um.getUser())) { // If this command is for the user
 								// Add the group to own data
 								gm.addGroup(command[2], command[3]);
 							}
+						}
+						
+						if (command[0].equals("CheckMember")) { //Check Member in group
+							um.getUser();
+						}
+						
+						if (command[0].equals("DeleteMember")) { //Delete Member command.
+							
 						}
 										
 					} catch (IOException ex) {
@@ -514,5 +551,4 @@ public class WhatsChat extends JFrame implements Performable {
         }
 	
 	}
-
 }
