@@ -31,6 +31,9 @@ import java.awt.Color;
 import javax.swing.JTabbedPane;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
+import javax.swing.JPopupMenu;
+import java.awt.Component;
+import java.awt.Font;
 
 public class WhatsChat extends JFrame implements Performable {
 	
@@ -49,7 +52,6 @@ public class WhatsChat extends JFrame implements Performable {
 	boolean registered = false;
 	
 	private JPanel contentPane;
-//	private JTextField txtUserName;
 	private JTextField textField;
 	JTextArea textArea = new JTextArea();
 	
@@ -76,7 +78,7 @@ public class WhatsChat extends JFrame implements Performable {
 	 */
 	public WhatsChat() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 789, 564);
+		setBounds(100, 100, 805, 590);
 		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -89,6 +91,13 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		JMenu mnGroupManagement = new JMenu("Group Management");
 		menuBar.add(mnGroupManagement);
+		
+		JMenuItem btnCreateGroup = new JMenuItem("Create Group");
+		mnGroupManagement.add(btnCreateGroup);
+		
+		JMenuItem btnNewMember = new JMenuItem("Add Member");
+		mnGroupManagement.add(btnNewMember);
+		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -116,28 +125,37 @@ public class WhatsChat extends JFrame implements Performable {
 		    }
 		});
 		
-		JButton btnCreateGroup = new JButton("Create");
-		
-		btnCreateGroup.setBounds(15, 0, 117, 29);
-		contentPane.add(btnCreateGroup);
-		
 		JButton btnNewButton = new JButton("Edit");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				
+			}
+		});
 		btnNewButton.setBounds(259, 0, 117, 29);
 		contentPane.add(btnNewButton);
 		
 		JButton btnNewButton_1 = new JButton("Delete");
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
 		btnNewButton_1.setBounds(363, 0, 117, 29);
 		contentPane.add(btnNewButton_1);
 		
 		JPanel User = new JPanel();
 		User.setBackground(Color.WHITE);
-		User.setBounds(15, 26, 207, 439);
+
+		User.setBounds(15, 16, 224, 477);
+
 		contentPane.add(User);
 		User.setLayout(null);
 		
 		JLabel image = new JLabel("");
 		image.setIcon(new ImageIcon("img/profile.png"));
-		image.setBounds(54, 17, 104, 99);
+
+		image.setBounds(64, 16, 104, 99);
 		User.add(image);
 		
 		Random rand = new Random();
@@ -145,25 +163,37 @@ public class WhatsChat extends JFrame implements Performable {
 		um.setUser(user);
 		
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
-		lblCurrentUsername.setBounds(70, 132, 87, 20);
+
+		lblCurrentUsername.setHorizontalAlignment(SwingConstants.CENTER);
+		lblCurrentUsername.setBounds(64, 131, 87, 20);
+
 		User.add(lblCurrentUsername);
 		lblCurrentUsername.setText(user);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(15, 184, 181, 244);
+
+		tabbedPane.setBounds(15, 184, 193, 277);
 		User.add(tabbedPane);
 		
 		JPanel Online = new JPanel();
-		Online.setBackground(Color.WHITE);
+		Online.setBackground(new Color(248, 248, 255));
 		tabbedPane.addTab("Online", null, Online, null);
 		Online.setLayout(null);
 		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers());
-<<<<<<< HEAD
-		listOnlineUsers.setBounds(0, 0, 176, 290);
-=======
-		listOnlineUsers.setBounds(0, 28, 209, 276);
->>>>>>> 213971a31c0fd75e54813d2701ac57cda1fd8bf4
+
+		listOnlineUsers.setBackground(new Color(248, 248, 255));
+		listOnlineUsers.setBounds(0, 28, 188, 205);
+
 		Online.add(listOnlineUsers);
+		
+		JPopupMenu popupMenu_1 = new JPopupMenu();
+		addPopup(listOnlineUsers, popupMenu_1);
+		
+		JMenuItem popupCreateGroup = new JMenuItem("Create Group");
+		popupMenu_1.add(popupCreateGroup);
+		
+		JMenuItem popupAddMember = new JMenuItem("Add Member");
+		popupMenu_1.add(popupAddMember);
 		
 		JButton btnClearOnlineUsers = new JButton("Clear Selection");
 		btnClearOnlineUsers.addActionListener(new ActionListener() {
@@ -171,9 +201,10 @@ public class WhatsChat extends JFrame implements Performable {
 				listOnlineUsers.clearSelection();
 			}
 		});
-		btnClearOnlineUsers.setBounds(0, 0, 209, 29);
+		btnClearOnlineUsers.setBounds(0, 0, 188, 29);
 		Online.add(btnClearOnlineUsers);
 		
+		//Create Group
 		btnCreateGroup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
@@ -206,15 +237,53 @@ public class WhatsChat extends JFrame implements Performable {
 			}
 		});
 		
+		popupCreateGroup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+				groupName = JOptionPane.showInputDialog("Enter a group name");
+				
+				if (groupName == null) { return; } // If there is no input, exit the method
+				
+				String command = "GroupnameCheck|" + groupName + "|" + um.getUser();
+				network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
+				
+				try { // Sleep for 1 second
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				} 
+				
+				if (!gm.getGroupnameTaken()) {
+					String IP = network.getRandomIP();
+					gm.addGroup(groupName, IP);
+					JOptionPane.showMessageDialog(null,
+							groupName + ", have been successfully created!");
+					// Sends invite to all selected members
+					gm.inviteMembers(selectedUsers, groupName,IP);
+					listOnlineUsers.clearSelection(); // Clears selection for online users
+				}
+				else {
+					JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+				}
+				gm.setGroupnameTaken(false); // Reset flag
+			}
+		});
+		
 		JPanel group = new JPanel();
-		group.setBackground(Color.WHITE);
+		group.setBackground(new Color(248, 248, 255));
 		tabbedPane.addTab("Group", null, group, null);
 		group.setLayout(null);
 		
 		JList<String> listGroup = new JList<String>(gm.getGroups());
-		listGroup.setBounds(0, 33, 203, 271);
+		listGroup.setBounds(0, 33, 188, 200);
 		group.add(listGroup);
-		listGroup.setBackground(Color.WHITE);
+		listGroup.setBackground(new Color(248, 248, 255));
+		
+		JPopupMenu popupMenu = new JPopupMenu();
+		addPopup(listGroup, popupMenu);
+		
+		JMenuItem mntmCreateuItem = new JMenuItem("Create");
+		popupMenu.add(mntmCreateuItem);
 		
 		JButton btnClearGroupList = new JButton("Clear Selection");
 		btnClearGroupList.addActionListener(new ActionListener() {
@@ -227,50 +296,37 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
-		panel.setBounds(237, 29, 517, 436);
+
+		panel.setBounds(259, 26, 505, 467);
+
 		contentPane.add(panel);
 		panel.setLayout(null);
 		
-//		txtUserName = new JTextField();
-//		txtUserName.setBounds(409, 108, 179, 26);
-//		contentPane.add(txtUserName);
-//		txtUserName.setColumns(10);
-		
 		textField = new JTextField();
 		textField.setBackground(new Color(248, 248, 255));
-		textField.setBounds(15, 398, 353, 26);
+
+		textField.setBounds(15, 422, 342, 29);
+
 		panel.add(textField);
 		textField.setColumns(10);
 		
 		JButton btnNewButton_2 = new JButton("Send");
-		btnNewButton_2.setBounds(380, 397, 117, 29);
+
+		btnNewButton_2.setBounds(372, 422, 117, 29);
+
 		panel.add(btnNewButton_2);
+		textArea.setFont(new Font("Monospaced", Font.PLAIN, 15));
 		textArea.setEditable(false);
 		textArea.setBackground(new Color(248, 248, 255));
 		textArea.setBorder(border);
-		textArea.setBounds(15, 52, 482, 315);
+
+		textArea.setBounds(15, 52, 474, 354);
+
 		panel.add(textArea);
-		currentGroupLabel.setBounds(15, 16, 129, 20);
+		currentGroupLabel.setBounds(15, 16, 360, 20);
 		panel.add(currentGroupLabel);
 		
-		currentGroupLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-		
-		JButton btnNewMember = new JButton("Add Member");
-		btnNewMember.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// Sends invite to all selected members
-				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
-				boolean success = gm.addMembers(selectedUsers);
-				if (success) {
-					JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
-				}
-				else {
-					JOptionPane.showMessageDialog(new JFrame(), "Unable to invite. Make sure you are in a group", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
-				}
-			}
-		});
-		btnNewMember.setBounds(130, 0, 117, 29);
-		contentPane.add(btnNewMember);
+		currentGroupLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String chatMsg = um.getUser() + ": " + textField.getText();
@@ -294,9 +350,6 @@ public class WhatsChat extends JFrame implements Performable {
 				RegisterUsername.addActionListener (new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						name = JOptionPane.showInputDialog("Name");
-//						String msg = name+" have been successfully registered!";
-//						JOptionPane.showMessageDialog(null, msg);
-//						lblCurrentUsername.setText(name);
 						
 						if(name.equals("")){
 							JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
@@ -327,6 +380,35 @@ public class WhatsChat extends JFrame implements Performable {
 						}
 						
 						
+					}
+				});
+				
+		//Add member to existing group
+				btnNewMember.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// Sends invite to all selected members
+						selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+						boolean success = gm.addMembers(selectedUsers);
+						if (success) {
+							JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
+						}
+						else {
+							JOptionPane.showMessageDialog(new JFrame(), "Unable to invite. Make sure you are in a group", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+						}
+					}
+				});
+				
+				popupAddMember.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// Sends invite to all selected members
+						selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+						boolean success = gm.addMembers(selectedUsers);
+						if (success) {
+							JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
+						}
+						else {
+							JOptionPane.showMessageDialog(new JFrame(), "Unable to invite. Make sure you are in a group", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+						}
 					}
 				});
 		
@@ -384,7 +466,7 @@ public class WhatsChat extends JFrame implements Performable {
 								gm.addGroup(command[2], command[3]);
 							}
 						}
-						
+										
 					} catch (IOException ex) {
 						ex.printStackTrace();
 					}
@@ -434,8 +516,5 @@ public class WhatsChat extends JFrame implements Performable {
         }
 >>>>>>> master
 	}
-=======
->>>>>>> parent of b52e82a... Minor changes to the UI
-=======
->>>>>>> parent of b52e82a... Minor changes to the UI
+
 }
