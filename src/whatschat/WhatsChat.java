@@ -403,6 +403,7 @@ public class WhatsChat extends JFrame implements Performable {
 	}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	private static void addPopup(Component component, final JPopupMenu popup) {
 		component.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -433,6 +434,8 @@ public class WhatsChat extends JFrame implements Performable {
         }
 >>>>>>> master
 	}
+=======
+>>>>>>> parent of b52e82a... Minor changes to the UI
 =======
 >>>>>>> parent of b52e82a... Minor changes to the UI
 }
