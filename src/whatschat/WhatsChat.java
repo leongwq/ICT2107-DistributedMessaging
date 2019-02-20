@@ -483,9 +483,7 @@ public class WhatsChat extends JFrame implements Performable {
 	public void updateCurrentGroup() {
 		currentGroupLabel.setText("Current Group: " + gm.getCurrentGroup());
 	}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 	private static void addPopup(Component component, final JPopupMenu popup) {
 		component.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -502,7 +500,7 @@ public class WhatsChat extends JFrame implements Performable {
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
-=======
+	}
 	
 	@Override
 	public void clearChat() {
@@ -514,7 +512,7 @@ public class WhatsChat extends JFrame implements Performable {
 		for(int i = 0; i < conversations.size(); i++) {
 			textArea.append(conversations.get(i) + '\n');
         }
->>>>>>> master
+	
 	}
 
 }
