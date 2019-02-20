@@ -40,6 +40,7 @@ public class WhatsChat extends JFrame implements Performable {
 	UserManagement um = new UserManagement();
 	GroupManagement gm = new GroupManagement(WhatsChat.this,network);
 	String groupName;
+	JedisConnection jedis = new JedisConnection(); // Create Jedis object
 
 	List<String> selectedUsers;
 	
@@ -65,7 +66,6 @@ public class WhatsChat extends JFrame implements Performable {
 				try {
 					WhatsChat frame = new WhatsChat();
 					frame.setVisible(true);
-					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -109,6 +109,11 @@ public class WhatsChat extends JFrame implements Performable {
 		// Get all current online user
 		String command = "KnockKnock";
 		network.sendBroadcastMessage(command);
+		
+		// Probably the only client. Reset redis database
+		if (um.getOnlineUsers().getSize() == 1 && gm.getGroups().isEmpty()) {
+			jedis.flush();
+		}
 		
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
@@ -228,6 +233,7 @@ public class WhatsChat extends JFrame implements Performable {
 			public void actionPerformed(ActionEvent e) {
 				String chatMsg = um.getUser() + ": " + textField.getText();
 				network.sendChatMessage(chatMsg);
+				textField.setText("");
 			}
 		});
 		listGroup.addMouseListener(new MouseAdapter() {
@@ -444,6 +450,7 @@ public class WhatsChat extends JFrame implements Performable {
 	public void updateCurrentGroup() {
 		currentGroupLabel.setText("Current Group: " + gm.getCurrentGroup());
 	}
+<<<<<<< HEAD
 	private static void addPopup(Component component, final JPopupMenu popup) {
 		component.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -460,5 +467,18 @@ public class WhatsChat extends JFrame implements Performable {
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
+=======
+	
+	@Override
+	public void clearChat() {
+		textArea.setText("");
+	}
+	
+	@Override
+	public void updateChatWithHistory(List<String> conversations) {
+		for(int i = 0; i < conversations.size(); i++) {
+			textArea.append(conversations.get(i) + '\n');
+        }
+>>>>>>> master
 	}
 }
