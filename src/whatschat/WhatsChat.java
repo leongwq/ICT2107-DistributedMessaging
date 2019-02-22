@@ -44,10 +44,12 @@ public class WhatsChat extends JFrame implements Performable {
 	JedisConnection jedis = new JedisConnection(); // Create Jedis object
 
 	List<String> selectedUsers;
+	List<String> selectedGroup;
 	
 	Border border = BorderFactory.createLineBorder(Color.BLACK, 1);
 	
 	String prevUsername = "";
+	String prevGroupName = "";
 	String name = "";
 	boolean registered = false;
 	
@@ -55,7 +57,7 @@ public class WhatsChat extends JFrame implements Performable {
 	private JTextField textField;
 	JTextArea textArea = new JTextArea();
 	
-	JLabel currentGroupLabel = new JLabel("Current Group: -");
+	JLabel currentGroupLabel = new JLabel("");
 	
 	/**
 	 * Launch the application.
@@ -95,6 +97,9 @@ public class WhatsChat extends JFrame implements Performable {
 		JMenuItem btnCreateGroup = new JMenuItem("Create Group");
 		mnGroupManagement.add(btnCreateGroup);
 		
+		JMenuItem btnChangeName = new JMenuItem("Edit Group Name");
+		mnGroupManagement.add(btnChangeName);
+		
 		JMenuItem btnNewMember = new JMenuItem("Add Member");
 		mnGroupManagement.add(btnNewMember);
 		
@@ -124,16 +129,6 @@ public class WhatsChat extends JFrame implements Performable {
 				network.sendBroadcastMessage(command);
 		    }
 		});
-		
-		JButton btnNewButton = new JButton("Edit");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-				
-			}
-		});
-		btnNewButton.setBounds(259, 0, 117, 29);
-		contentPane.add(btnNewButton);
 		
 		JButton btnNewButton_1 = new JButton("Delete");
 		btnNewButton_1.addActionListener(new ActionListener() {
@@ -228,6 +223,7 @@ public class WhatsChat extends JFrame implements Performable {
 							groupName + ", have been successfully created!");
 					// Sends invite to all selected members
 					gm.inviteMembers(selectedUsers, groupName,IP);
+					
 					listOnlineUsers.clearSelection(); // Clears selection for online users
 				}
 				else {
@@ -285,13 +281,16 @@ public class WhatsChat extends JFrame implements Performable {
 		JMenuItem details = new JMenuItem("Details");
 		popupMenu.add(details);
 		
+		JMenuItem mntmChangeName = new JMenuItem("Change Name");
+		popupMenu.add(mntmChangeName);
+		
 		JButton btnClearGroupList = new JButton("Clear Selection");
 		btnClearGroupList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				listGroup.clearSelection();
 			}
 		});
-		btnClearGroupList.setBounds(0, 0, 209, 29);
+		btnClearGroupList.setBounds(0, 0, 188, 29);
 		group.add(btnClearGroupList);
 		
 		JPanel Chat = new JPanel();
@@ -330,13 +329,22 @@ public class WhatsChat extends JFrame implements Performable {
 		textArea.setBackground(new Color(248, 248, 255));
 		textArea.setBorder(border);
 
-		textArea.setBounds(15, 52, 474, 354);
+		textArea.setBounds(15, 42, 474, 364);
 
 		panel.add(textArea);
-		currentGroupLabel.setBounds(15, 16, 360, 20);
+		currentGroupLabel.setBounds(15, 16, 254, 20);
+		currentGroupLabel.setText("Current Group: -");
 		panel.add(currentGroupLabel);
 		
 		currentGroupLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		
+		JButton btnChnageGroupName = new JButton("");
+		btnChnageGroupName.setBackground(Color.WHITE);
+		btnChnageGroupName.setIcon(new ImageIcon("img/setting.png"));
+		
+		btnChnageGroupName.setBounds(464, 7, 26, 29);
+		panel.add(btnChnageGroupName);
+		
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String chatMsg = um.getUser() + ": " + textField.getText();
@@ -344,6 +352,79 @@ public class WhatsChat extends JFrame implements Performable {
 				textField.setText("");
 			}
 		});
+		
+		//Change group name
+		btnChangeName.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				groupName = JOptionPane.showInputDialog("New Group Name");
+				
+				if(groupName.equals("")){
+					JOptionPane.showMessageDialog(new JFrame(), "Group name cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					String command = "GroupnameCheck|" + groupName + "|" + um.getUser();
+					network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
+
+					try { // Sleep for 1 second
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					} 
+					
+					if (!gm.getGroupnameTaken()) {
+						prevGroupName = gm.getCurrentGroup(); // Store previous group name
+						gm.setCurrentGroup(groupName); // Set name in UM
+						currentGroupLabel.setText("Current Group: "+gm.getCurrentGroup()); // Display it
+						JOptionPane.showMessageDialog(null,
+								groupName+ ", you have been successfully changed!");
+						// Announce name change
+						String nccommand = "GroupNameChanged|" + prevGroupName + "|" + gm.getCurrentGroup();
+						network.sendBroadcastMessage(nccommand); 
+					}
+					else {
+						JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					}
+					gm.setGroupnameTaken(false); // Reset flag
+				}
+			}
+		});
+		
+		btnChnageGroupName.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				groupName = JOptionPane.showInputDialog("New Group Name");
+				
+				if(groupName.equals("")){
+					JOptionPane.showMessageDialog(new JFrame(), "Group name cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					String command = "GroupnameCheck|" + groupName + "|" + um.getUser();
+					network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
+
+					try { // Sleep for 1 second
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					} 
+					
+					if (!gm.getGroupnameTaken()) {
+						prevGroupName = gm.getCurrentGroup(); // Store previous group name
+						gm.setCurrentGroup(groupName); // Set name in UM
+						currentGroupLabel.setText("Current Group: "+gm.getCurrentGroup()); // Display it
+						JOptionPane.showMessageDialog(null,
+								groupName+ ", you have been successfully changed!");
+						// Announce name change
+						String nccommand = "GroupNameChanged|" + prevGroupName + "|" + gm.getCurrentGroup();
+						network.sendBroadcastMessage(nccommand); 
+					}
+					else {
+						JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					}
+					gm.setGroupnameTaken(false); // Reset flag
+				}
+				
+			}
+		});
+		
+		
 		listGroup.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -355,6 +436,7 @@ public class WhatsChat extends JFrame implements Performable {
 		        }
 			}
 		});
+		
 
 		//Getting inputs from user to create user name
 				RegisterUsername.addActionListener (new ActionListener() {
@@ -424,9 +506,7 @@ public class WhatsChat extends JFrame implements Performable {
 				//Get group details
 				details.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						String userGroup = "CheckMember|";
-						network.sendBroadcastMessage(userGroup); 
-					
+						System.out.println(gm.getGroups());
 					}
 				});
 				
@@ -502,6 +582,10 @@ public class WhatsChat extends JFrame implements Performable {
 						
 						if (command[0].equals("DeleteMember")) { //Delete Member command.
 							
+						}
+						
+						if (command[0].equals("GroupNameChanged")) {
+							gm.changeGroupName(command[1], command[2]);
 						}
 										
 					} catch (IOException ex) {

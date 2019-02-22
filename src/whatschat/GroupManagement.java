@@ -64,6 +64,14 @@ public class GroupManagement{
 		}
 	}
 	
+	public void changeGroupName(String oldGroupName, String newGroupName) {
+		if (groupsModel.contains(oldGroupName)) { // 
+//			String ipAddress = IPMapping.get(groupsModel.getElementAt(index));
+			groupsModel.removeElement(oldGroupName);
+			groupsModel.addElement(newGroupName);
+		}
+	}
+	
 	public DefaultListModel<String> getGroups() {
 		return groupsModel;
 	}
@@ -74,6 +82,10 @@ public class GroupManagement{
 		} else {
 			return true;
 		}
+	}
+	
+	public String getMember(int index) {
+		return groupsModel.getElementAt(index);
 	}
 	
 	@SuppressWarnings("deprecation")
