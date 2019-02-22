@@ -67,9 +67,13 @@ public class GroupManagement{
 	public void changeGroupName(String oldGroupName, String newGroupName) {
 		if (groupsModel.contains(oldGroupName)) { // 
 //			String ipAddress = IPMapping.get(groupsModel.getElementAt(index));
+			String ip = IPMapping.get(oldGroupName);
 			groupsModel.removeElement(oldGroupName);
 			groupsModel.addElement(newGroupName);
+			perf.updateCurrentGroup();
+			IPMapping.put(newGroupName,ip);
 		}
+		
 	}
 	
 	public DefaultListModel<String> getGroups() {

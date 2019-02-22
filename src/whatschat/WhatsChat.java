@@ -267,7 +267,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		JPanel group = new JPanel();
 		group.setBackground(new Color(248, 248, 255));
-		tabbedPane.addTab("Group", null, group, null);
+		tabbedPane.addTab("Groups", null, group, null);
 		group.setLayout(null);
 		
 		JList<String> listGroup = new JList<String>(gm.getGroups());
@@ -293,15 +293,15 @@ public class WhatsChat extends JFrame implements Performable {
 		btnClearGroupList.setBounds(0, 0, 188, 29);
 		group.add(btnClearGroupList);
 		
-		JPanel Chat = new JPanel();
-		Chat.setBackground(new Color(248, 248, 255));
-		tabbedPane.addTab("Chat", null, Chat, null);
-		Chat.setLayout(null);
+		JPanel friends = new JPanel();
+		friends.setBackground(new Color(248, 248, 255));
+		tabbedPane.addTab("Friends", null, friends, null);
+		friends.setLayout(null);
 		
 		JList list_1 = new JList();
 		list_1.setBackground(new Color(248, 248, 255));
 		list_1.setBounds(0, 0, 188, 243);
-		Chat.add(list_1);
+		friends.add(list_1);
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
@@ -373,12 +373,12 @@ public class WhatsChat extends JFrame implements Performable {
 					if (!gm.getGroupnameTaken()) {
 						prevGroupName = gm.getCurrentGroup(); // Store previous group name
 						gm.setCurrentGroup(groupName); // Set name in UM
-						currentGroupLabel.setText("Current Group: "+gm.getCurrentGroup()); // Display it
 						JOptionPane.showMessageDialog(null,
 								groupName+ ", you have been successfully changed!");
 						// Announce name change
 						String nccommand = "GroupNameChanged|" + prevGroupName + "|" + gm.getCurrentGroup();
 						network.sendBroadcastMessage(nccommand); 
+//						currentGroupLabel.setText("Current Group: "+gm.getCurrentGroup()); // Display it
 					}
 					else {
 						JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
@@ -408,7 +408,7 @@ public class WhatsChat extends JFrame implements Performable {
 					if (!gm.getGroupnameTaken()) {
 						prevGroupName = gm.getCurrentGroup(); // Store previous group name
 						gm.setCurrentGroup(groupName); // Set name in UM
-						currentGroupLabel.setText("Current Group: "+gm.getCurrentGroup()); // Display it
+						currentGroupLabel.setText("Current Group: "+name); // Display it
 						JOptionPane.showMessageDialog(null,
 								groupName+ ", you have been successfully changed!");
 						// Announce name change
