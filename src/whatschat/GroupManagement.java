@@ -70,6 +70,7 @@ public class GroupManagement{
 			String ip = IPMapping.get(oldGroupName);
 			groupsModel.removeElement(oldGroupName);
 			groupsModel.addElement(newGroupName);
+			currentGroup = newGroupName;
 			perf.updateCurrentGroup();
 			IPMapping.put(newGroupName,ip);
 		}

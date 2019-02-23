@@ -378,7 +378,7 @@ public class WhatsChat extends JFrame implements Performable {
 						// Announce name change
 						String nccommand = "GroupNameChanged|" + prevGroupName + "|" + gm.getCurrentGroup();
 						network.sendBroadcastMessage(nccommand); 
-//						currentGroupLabel.setText("Current Group: "+gm.getCurrentGroup()); // Display it
+						currentGroupLabel.setText("Current Group: "+gm.getCurrentGroup()); // Display it
 					}
 					else {
 						JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
@@ -388,6 +388,7 @@ public class WhatsChat extends JFrame implements Performable {
 			}
 		});
 		
+		//button near the label
 		btnChnageGroupName.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
@@ -396,7 +397,7 @@ public class WhatsChat extends JFrame implements Performable {
 				if(groupName.equals("")){
 					JOptionPane.showMessageDialog(new JFrame(), "Group name cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
-					String command = "GroupnameCheck|" + groupName + "|" + um.getUser();
+					String command = "GroupnameCheck|" + groupName;
 					network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
 
 					try { // Sleep for 1 second
@@ -408,7 +409,7 @@ public class WhatsChat extends JFrame implements Performable {
 					if (!gm.getGroupnameTaken()) {
 						prevGroupName = gm.getCurrentGroup(); // Store previous group name
 						gm.setCurrentGroup(groupName); // Set name in UM
-						currentGroupLabel.setText("Current Group: "+name); // Display it
+						currentGroupLabel.setText("Current Group: -"); // Display it
 						JOptionPane.showMessageDialog(null,
 								groupName+ ", you have been successfully changed!");
 						// Announce name change
