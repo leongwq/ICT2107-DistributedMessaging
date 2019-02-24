@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListModel;
-import redis.clients.jedis.Jedis;
 
 public class GroupManagement{
 	
