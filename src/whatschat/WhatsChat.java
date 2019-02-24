@@ -39,6 +39,7 @@ public class WhatsChat extends JFrame implements Performable {
 	Network network = new Network();
 	UserManagement um = new UserManagement();
 	GroupManagement gm = new GroupManagement(WhatsChat.this,network);
+	FriendManagement fm = new FriendManagement(gm,um,network);
 	String groupName;
 	JedisConnection jedis = new JedisConnection(); // Create Jedis object
 
@@ -109,11 +110,90 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		network.connectToBroadcast();
 		MulticastSocket multicastBroadcastSocket = network.getBroadcastSocket();
-		JButton btnRegisterUser = new JButton("Register User");
+		
+		// Get random user name
+		Random rand = new Random();
+		String user = "Eva" + rand.nextInt(2000);
+		um.setUser(user);
 
 		// Get all current online user
 		String command = "KnockKnock";
 		network.sendBroadcastMessage(command);
+		
+		// User Panel. Side menu
+		JPanel User = new JPanel();
+		User.setBackground(Color.WHITE);
+		User.setBounds(15, 16, 267, 477);
+		contentPane.add(User);
+		User.setLayout(null);
+				
+		// Tab Pane
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setBounds(6, 184, 255, 277);
+		User.add(tabbedPane);
+		
+		// Online Tab
+		JPanel Online = new JPanel();
+		Online.setBackground(new Color(248, 248, 255));
+		tabbedPane.addTab("Online", null, Online, null);
+		Online.setLayout(null);
+		
+		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers()); // Online users list
+		listOnlineUsers.setBackground(new Color(248, 248, 255));
+		listOnlineUsers.setBounds(0, 28, 188, 205);
+		Online.add(listOnlineUsers);
+		
+		JButton btnClearOnlineUsers = new JButton("Clear Selection"); // Clear online selection
+		btnClearOnlineUsers.setBounds(0, 0, 234, 29);
+		Online.add(btnClearOnlineUsers);
+		
+		// Group Tab
+		JPanel group = new JPanel();
+		group.setBackground(new Color(248, 248, 255));
+		tabbedPane.addTab("Groups", null, group, null);
+		group.setLayout(null);
+		
+		JList<String> listGroup = new JList<String>(gm.getGroups());
+		listGroup.setBounds(0, 33, 188, 200);
+		group.add(listGroup);
+		listGroup.setBackground(new Color(248, 248, 255));
+		
+		// Friends Tab
+		JPanel friends = new JPanel();
+		friends.setBackground(new Color(248, 248, 255));
+		tabbedPane.addTab("Friends", null, friends, null);
+		friends.setLayout(null);
+		
+		JList<String> listFriends = new JList<String>(fm.getFriends());
+		listFriends.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JList list = (JList)e.getSource();
+				if (e.getClickCount() == 2) { // Double-click detected. 
+		            int index = list.locationToIndex(e.getPoint());
+		            fm.connectToFriend(index);
+		            listGroup.clearSelection();
+		        }
+			}
+		});
+		listFriends.setBounds(6, 6, 222, 219);
+		friends.add(listFriends);
+		
+		// Buttons Declaration
+		JButton btnNewButton_1 = new JButton("Delete");
+		JButton btnClearGroupList = new JButton("Clear Selection");
+		JButton btnNewButton_2 = new JButton("Send");
+		JButton btnChnageGroupName = new JButton("");
+		
+		// Labels Declaration 
+		JLabel lblCurrentUsername = new JLabel("NotRegistered");
+		JLabel image = new JLabel("");
+		
+		// Buttons Position
+		btnNewButton_1.setBounds(363, 0, 117, 29);
+		contentPane.add(btnNewButton_1);
+		btnClearGroupList.setBounds(0, 0, 234, 29);
+		group.add(btnClearGroupList);
 		
 		// Probably the only client. Reset redis database
 		if (um.getOnlineUsers().getSize() == 1 && gm.getGroups().isEmpty()) {
@@ -129,56 +209,25 @@ public class WhatsChat extends JFrame implements Performable {
 		    }
 		});
 		
-		JButton btnNewButton_1 = new JButton("Delete");
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
 			}
 		});
-		btnNewButton_1.setBounds(363, 0, 117, 29);
-		contentPane.add(btnNewButton_1);
-		
-		JPanel User = new JPanel();
-		User.setBackground(Color.WHITE);
 
-		User.setBounds(15, 16, 267, 477);
-
-		contentPane.add(User);
-		User.setLayout(null);
 		
-		JLabel image = new JLabel("");
 		image.setIcon(new ImageIcon("img/profile.png"));
 
 		image.setBounds(64, 16, 104, 99);
 		User.add(image);
 		
-		Random rand = new Random();
-		String user = "Eva" + rand.nextInt(2000);
-		um.setUser(user);
-		
-		JLabel lblCurrentUsername = new JLabel("NotRegistered");
-
 		lblCurrentUsername.setHorizontalAlignment(SwingConstants.CENTER);
 		lblCurrentUsername.setBounds(64, 131, 87, 20);
 
 		User.add(lblCurrentUsername);
 		lblCurrentUsername.setText(user);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-
-		tabbedPane.setBounds(6, 184, 255, 277);
-		User.add(tabbedPane);
 		
-		JPanel Online = new JPanel();
-		Online.setBackground(new Color(248, 248, 255));
-		tabbedPane.addTab("Online", null, Online, null);
-		Online.setLayout(null);
-		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers());
-
-		listOnlineUsers.setBackground(new Color(248, 248, 255));
-		listOnlineUsers.setBounds(0, 28, 188, 205);
-
-		Online.add(listOnlineUsers);
 		
 		JPopupMenu popupMenu_1 = new JPopupMenu();
 		addPopup(listOnlineUsers, popupMenu_1);
@@ -189,14 +238,18 @@ public class WhatsChat extends JFrame implements Performable {
 		JMenuItem popupAddMember = new JMenuItem("Add Member");
 		popupMenu_1.add(popupAddMember);
 		
-		JButton btnClearOnlineUsers = new JButton("Clear Selection");
+		JMenuItem popupAddFriend = new JMenuItem("Add Friend");
+		popupMenu_1.add(popupAddFriend);
+		
+		JList list_2 = new JList();
+		list_2.setBounds(30, 123, 147, 90);
+		Online.add(list_2);
+		
 		btnClearOnlineUsers.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				listOnlineUsers.clearSelection();
 			}
 		});
-		btnClearOnlineUsers.setBounds(0, 0, 234, 29);
-		Online.add(btnClearOnlineUsers);
 		
 		//Create Group
 		btnCreateGroup.addActionListener(new ActionListener() {
@@ -264,15 +317,18 @@ public class WhatsChat extends JFrame implements Performable {
 			}
 		});
 		
-		JPanel group = new JPanel();
-		group.setBackground(new Color(248, 248, 255));
-		tabbedPane.addTab("Groups", null, group, null);
-		group.setLayout(null);
-		
-		JList<String> listGroup = new JList<String>(gm.getGroups());
-		listGroup.setBounds(0, 33, 188, 200);
-		group.add(listGroup);
-		listGroup.setBackground(new Color(248, 248, 255));
+		popupAddFriend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+												
+				String IP = network.getRandomIP(); // Generates IP
+				fm.inviteFriends(selectedUsers, um.getUser(), IP);
+				listOnlineUsers.clearSelection(); // Clears selection for online users
+
+				JOptionPane.showMessageDialog(new JFrame(), "Friend request sent", "Success", JOptionPane.INFORMATION_MESSAGE); // Show error message
+			}
+		});
+
 		
 		JPopupMenu popupMenu = new JPopupMenu();
 		addPopup(listGroup, popupMenu);
@@ -283,24 +339,11 @@ public class WhatsChat extends JFrame implements Performable {
 		JMenuItem mntmChangeName = new JMenuItem("Change Name");
 		popupMenu.add(mntmChangeName);
 		
-		JButton btnClearGroupList = new JButton("Clear Selection");
 		btnClearGroupList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				listGroup.clearSelection();
 			}
 		});
-		btnClearGroupList.setBounds(0, 0, 234, 29);
-		group.add(btnClearGroupList);
-		
-		JPanel friends = new JPanel();
-		friends.setBackground(new Color(248, 248, 255));
-		tabbedPane.addTab("Friends", null, friends, null);
-		friends.setLayout(null);
-		
-		JList list_1 = new JList();
-		list_1.setBackground(new Color(248, 248, 255));
-		list_1.setBounds(0, 0, 188, 243);
-		friends.add(list_1);
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
@@ -318,8 +361,6 @@ public class WhatsChat extends JFrame implements Performable {
 		panel.add(textField);
 		textField.setColumns(10);
 		
-		JButton btnNewButton_2 = new JButton("Send");
-
 		btnNewButton_2.setBounds(372, 422, 117, 29);
 
 		panel.add(btnNewButton_2);
@@ -331,13 +372,12 @@ public class WhatsChat extends JFrame implements Performable {
 		textArea.setBounds(15, 42, 474, 364);
 
 		panel.add(textArea);
-		currentGroupLabel.setBounds(15, 16, 254, 20);
+		currentGroupLabel.setBounds(15, 16, 416, 20);
 		currentGroupLabel.setText("Current Group: -");
 		panel.add(currentGroupLabel);
 		
 		currentGroupLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		
-		JButton btnChnageGroupName = new JButton("");
 		btnChnageGroupName.setBackground(Color.WHITE);
 		btnChnageGroupName.setIcon(new ImageIcon("img/setting.png"));
 		
@@ -549,7 +589,9 @@ public class WhatsChat extends JFrame implements Performable {
 						}
 						
 						if (command[0].equals("Hello")) {
-							um.addOnlineUser(command[1]); // Add user to online user model
+							if (!command[1].equals(um.getUser())) {
+								um.addOnlineUser(command[1]); // Add user to online user model
+							}
 						}
 						
 						if (command[0].equals("Bye")) { // Going offline
@@ -587,6 +629,23 @@ public class WhatsChat extends JFrame implements Performable {
 						if (command[0].equals("GroupNameChanged")) {
 							gm.changeGroupName(command[1], command[2]);
 						}
+						if (command[0].equals("FriendInvite")) { // FriendInvite,TargetUser,Requester,IP
+							if (command[1].equals(um.getUser())) { // If this command is for the user
+								int dialogButton = JOptionPane.YES_NO_OPTION;
+								int dialogResult = JOptionPane.showConfirmDialog (null, "Would you like to be friends with " + command[2],"Friend Request",dialogButton);
+								if(dialogResult == JOptionPane.YES_OPTION){ // I want to be friend
+									fm.addFriend(command[2], command[3]); // Add to friend list
+									String bmsg = "FriendAccepted|" + command[2] + "|" + command[1] + "|" + command[3];
+									network.sendBroadcastMessage(bmsg);
+								}
+							}
+						}
+						if (command[0].equals("FriendAccepted")) { // FriendAccepted,TargetUser,Requester,IP
+							if (command[1].equals(um.getUser())) { // If this command is for the user
+								fm.addFriend(command[2], command[3]); // Add to friend list
+								JOptionPane.showMessageDialog(new JFrame(), command[2] + " has accepted your friend request", "Friend Request", JOptionPane.INFORMATION_MESSAGE);
+							}
+						}
 										
 					} catch (IOException ex) {
 						ex.printStackTrace();
@@ -594,17 +653,7 @@ public class WhatsChat extends JFrame implements Performable {
 				}
 			}
 		}).start();	}
-
-	@Override
-	public void appendToChat(String str) {
-		textArea.append(str);
-	}
 	
-	@Override
-	public void updateCurrentGroup() {
-		currentGroupLabel.setText("Current Group: " + gm.getCurrentGroup());
-	}
-
 	private static void addPopup(Component component, final JPopupMenu popup) {
 		component.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -621,6 +670,16 @@ public class WhatsChat extends JFrame implements Performable {
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
+	}
+
+	@Override
+	public void appendToChat(String str) {
+		textArea.append(str);
+	}
+	
+	@Override
+	public void updateCurrentGroup() {
+		currentGroupLabel.setText("Current Group: " + gm.getCurrentGroup());
 	}
 	
 	@Override
