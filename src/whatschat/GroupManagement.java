@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListModel;
-import redis.clients.jedis.Jedis;
 
 public class GroupManagement{
 	
@@ -52,9 +51,6 @@ public class GroupManagement{
 				perf.updateCurrentGroup(); // Update UI
 				network.connectToChat(groupIP); // Connect to chat IP
 				t = receiveChat(); // Receives thread object
-				perf.clearChat();
-				List<String> conversations = jedis.getChatContent(groupIP);
-				perf.updateChatWithHistory(conversations);
 			}
 			IPMapping.put(groupName,groupIP);
 			groupsModel.addElement(groupName); 
@@ -67,6 +63,19 @@ public class GroupManagement{
 		}
 	}
 	
+	public void changeGroupName(String oldGroupName, String newGroupName) {
+		if (groupsModel.contains(oldGroupName)) { // 
+//			String ipAddress = IPMapping.get(groupsModel.getElementAt(index));
+			String ip = IPMapping.get(oldGroupName);
+			groupsModel.removeElement(oldGroupName);
+			groupsModel.addElement(newGroupName);
+			currentGroup = newGroupName;
+			perf.updateCurrentGroup();
+			IPMapping.put(newGroupName,ip);
+		}
+		
+	}
+	
 	public DefaultListModel<String> getGroups() {
 		return groupsModel;
 	}
@@ -77,6 +86,10 @@ public class GroupManagement{
 		} else {
 			return true;
 		}
+	}
+	
+	public String getMember(int index) {
+		return groupsModel.getElementAt(index);
 	}
 	
 	@SuppressWarnings("deprecation")
