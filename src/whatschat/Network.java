@@ -6,8 +6,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.Random;
 
-import redis.clients.jedis.Jedis;
-
 public class Network {
 	
 	private String BROADCAST_ADDRESS = "230.1.1.1";

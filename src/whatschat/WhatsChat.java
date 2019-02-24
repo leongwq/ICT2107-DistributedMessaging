@@ -29,7 +29,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.Color;
 import javax.swing.JTabbedPane;
-import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.JPopupMenu;
 import java.awt.Component;
@@ -142,7 +141,7 @@ public class WhatsChat extends JFrame implements Performable {
 		JPanel User = new JPanel();
 		User.setBackground(Color.WHITE);
 
-		User.setBounds(15, 16, 224, 477);
+		User.setBounds(15, 16, 267, 477);
 
 		contentPane.add(User);
 		User.setLayout(null);
@@ -167,7 +166,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 
-		tabbedPane.setBounds(15, 184, 193, 277);
+		tabbedPane.setBounds(6, 184, 255, 277);
 		User.add(tabbedPane);
 		
 		JPanel Online = new JPanel();
@@ -196,7 +195,7 @@ public class WhatsChat extends JFrame implements Performable {
 				listOnlineUsers.clearSelection();
 			}
 		});
-		btnClearOnlineUsers.setBounds(0, 0, 188, 29);
+		btnClearOnlineUsers.setBounds(0, 0, 234, 29);
 		Online.add(btnClearOnlineUsers);
 		
 		//Create Group
@@ -290,7 +289,7 @@ public class WhatsChat extends JFrame implements Performable {
 				listGroup.clearSelection();
 			}
 		});
-		btnClearGroupList.setBounds(0, 0, 188, 29);
+		btnClearGroupList.setBounds(0, 0, 234, 29);
 		group.add(btnClearGroupList);
 		
 		JPanel friends = new JPanel();
@@ -306,7 +305,7 @@ public class WhatsChat extends JFrame implements Performable {
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
 
-		panel.setBounds(259, 26, 505, 467);
+		panel.setBounds(294, 26, 505, 467);
 
 		contentPane.add(panel);
 		panel.setLayout(null);
