@@ -91,6 +91,16 @@ public class Network {
 		String ip = "230.1." + r.nextInt(256) + "." + r.nextInt(256);
 		return ip;
 	}
+	
+	public void disconnectChat() {
+		try {
+			multicastChatSocket.leaveGroup(multicastChatGroup);
+			multicastChatSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 }
 

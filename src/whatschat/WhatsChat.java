@@ -180,7 +180,7 @@ public class WhatsChat extends JFrame implements Performable {
 		friends.add(listFriends);
 		
 		// Buttons Declaration
-		JButton btnNewButton_1 = new JButton("Delete");
+		JButton btnLeaveGroup = new JButton("Leave Group");
 		JButton btnClearGroupList = new JButton("Clear Selection");
 		JButton btnNewButton_2 = new JButton("Send");
 		JButton btnChnageGroupName = new JButton("");
@@ -190,8 +190,8 @@ public class WhatsChat extends JFrame implements Performable {
 		JLabel image = new JLabel("");
 		
 		// Buttons Position
-		btnNewButton_1.setBounds(363, 0, 117, 29);
-		contentPane.add(btnNewButton_1);
+		btnLeaveGroup.setBounds(363, 0, 117, 29);
+		contentPane.add(btnLeaveGroup);
 		btnClearGroupList.setBounds(0, 0, 234, 29);
 		group.add(btnClearGroupList);
 		
@@ -209,12 +209,11 @@ public class WhatsChat extends JFrame implements Performable {
 		    }
 		});
 		
-		btnNewButton_1.addActionListener(new ActionListener() {
+		btnLeaveGroup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				gm.leaveGroup();
 			}
 		});
-
 		
 		image.setIcon(new ImageIcon("img/profile.png"));
 

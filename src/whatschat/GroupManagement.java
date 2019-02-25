@@ -62,6 +62,25 @@ public class GroupManagement{
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
+	public void leaveGroup() { // Leave the current group
+		groupsModel.remove(groupsModel.indexOf(currentGroup)); // Remove the group from list
+		IPMapping.remove(currentGroup); // Remove from IP Mapping
+		t.stop();
+		
+		//Let's wait for the thread to die
+        try {
+			TimeUnit.MILLISECONDS.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        
+		disconnectChat();
+		currentGroup = "-"; // Remove current group
+		perf.updateCurrentGroup(); // Update UI
+		perf.clearChat();
+	}
+	
 	public void changeGroupName(String oldGroupName, String newGroupName) {
 		if (groupsModel.contains(oldGroupName)) { // 
 //			String ipAddress = IPMapping.get(groupsModel.getElementAt(index));
@@ -96,7 +115,9 @@ public class GroupManagement{
 		String ip = IPMapping.get(groupsModel.getElementAt(index));
 		network.connectToChat(ip); // Connect to chat IP
 		
-		t.stop(); // DIE NOW!
+		if (t != null) {
+			t.stop(); // DIE NOW!
+		}
 		
 		//Let's wait for the thread to die
         try {
@@ -151,6 +172,10 @@ public class GroupManagement{
 			String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
 			network.sendBroadcastMessage(bmsg);
 		}
+	}
+	
+	public void disconnectChat() {
+		network.disconnectChat();
 	}
 	
 	public Thread receiveChat() {
