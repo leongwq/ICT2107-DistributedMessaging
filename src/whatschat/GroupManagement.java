@@ -46,12 +46,11 @@ public class GroupManagement{
 
 	public void addGroup(String groupName, String groupIP) {
 		if (!groupsModel.contains(groupName)) { // Group name is not taken
-			if (groupsModel.isEmpty()) { // When user has no group, auto joins the first group
-				currentGroup = groupName;
-				perf.updateCurrentGroup(); // Update UI
-				network.connectToChat(groupIP); // Connect to chat IP
-				t = receiveChat(); // Receives thread object
-			}
+			currentGroup = groupName;
+			perf.updateCurrentGroup(); // Update UI
+			network.connectToChat(groupIP); // Connect to chat IP
+			t = receiveChat(); // Receives thread object
+			
 			IPMapping.put(groupName,groupIP);
 			groupsModel.addElement(groupName); 
 		}
@@ -114,6 +113,29 @@ public class GroupManagement{
 		perf.updateChatWithHistory(conversations);
 	}
 	
+	@SuppressWarnings("deprecation")
+	public void connectToGroup(String ip, String friendName) {
+		network.connectToChat(ip); // Connect to chat IP
+		
+		if (t != null) {
+			t.stop(); // DIE NOW!
+		}
+		
+		//Let's wait for the thread to die
+        try {
+			TimeUnit.MILLISECONDS.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+                
+		t = receiveChat();
+		currentGroup = "Sliding into " + friendName + "'s DM";
+		perf.updateCurrentGroup(); // Update UI
+		perf.clearChat();
+		List<String> conversations = jedis.getChatContent(ip);
+		perf.updateChatWithHistory(conversations);
+	}
+	
 	public boolean addMembers(List<String> selectedUsers) {
 		// Lets find the current group the user is on
 		if (getCurrentGroup() == null) {
@@ -127,7 +149,6 @@ public class GroupManagement{
 		// Sends invite to all selected members
 		for (int i = 0; i < selectedUsers.size(); i++) {
 			String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
-			System.out.println(IP);
 			network.sendBroadcastMessage(bmsg);
 		}
 	}
