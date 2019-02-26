@@ -154,9 +154,7 @@ public class GroupManagement{
 		String ip = IPMapping.get(groupsModel.getElementAt(index));
 		network.connectToChat(ip); // Connect to chat IP
 		
-		if (t != null) {
-			t.stop(); // DIE NOW!
-		}
+		t.stop(); // DIE NOW!
 		
 		//Let's wait for the thread to die
         try {
@@ -178,9 +176,7 @@ public class GroupManagement{
 	public void connectToGroup(String ip, String friendName) {
 		network.connectToChat(ip); // Connect to chat IP
 		
-		if (t != null) {
-			t.stop(); // DIE NOW!
-		}
+		t.stop(); // DIE NOW!
 		
 		//Let's wait for the thread to die
         try {
