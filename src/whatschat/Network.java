@@ -6,8 +6,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.Random;
 
-import redis.clients.jedis.Jedis;
-
 public class Network {
 	
 	private String BROADCAST_ADDRESS = "230.1.1.1";
@@ -92,6 +90,16 @@ public class Network {
 		Random r = new Random(); // Random IP address
 		String ip = "230.1." + r.nextInt(256) + "." + r.nextInt(256);
 		return ip;
+	}
+	
+	public void disconnectChat() {
+		try {
+			multicastChatSocket.leaveGroup(multicastChatGroup);
+			multicastChatSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
