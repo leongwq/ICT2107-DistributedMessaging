@@ -114,10 +114,7 @@ public class WhatsChat extends JFrame implements Performable {
 		JMenuItem btnNewMember = new JMenuItem("Add Member");
 		mnGroupManagement.add(btnNewMember);
 		
-		JMenuItem btn_RemoveMember = new JMenuItem("Remove Member");
-		mnGroupManagement.add(btn_RemoveMember);
-		
-		JMenu mnFriends = new JMenu("Friends Management");
+		JMenu mnFriends = new JMenu("Friend Management");
 		menuBar.add(mnFriends);
 		
 		JMenuItem btn_AddFriend = new JMenuItem("Add Friend");
@@ -427,72 +424,81 @@ public class WhatsChat extends JFrame implements Performable {
 			}
 		});
 		
+		JMenuItem btn_RemoveMember = new JMenuItem("Remove Member");
+		btn_RemoveMember.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listGroupMembers.getSelectedValuesList(); // Stores selected users into variable
+				gm.kickMembers(selectedUsers);
+			}
+		});
+		mnGroupManagement.add(btn_RemoveMember);
+		
 
 		//Getting inputs from user to create user name
-				RegisterUsername.addActionListener (new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						name = JOptionPane.showInputDialog("Name");
-						
-						if(name.equals("")){
-							JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
-						} else {
-							String command = "UsernameCheck|" + name + "|" + lblCurrentUsername.getText();;
-							network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
+		RegisterUsername.addActionListener (new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				name = JOptionPane.showInputDialog("Name");
+				
+				if(name.equals("")){
+					JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					String command = "UsernameCheck|" + name + "|" + lblCurrentUsername.getText();;
+					network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
 
-							try { // Sleep for 1 second
-								Thread.sleep(1000);
-							} catch (InterruptedException e1) {
-								e1.printStackTrace();
-							} 
-							
-							if (!um.getUsernameTaken()) {
-								prevUsername = um.getUser(); // Store previous user name
-								um.setUser(name); // Set name in UM
-								lblCurrentUsername.setText(name); // Display it
-								JOptionPane.showMessageDialog(null,
-										name+ ", you have been successfully registered!");
-								// Announce name change
-								String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
-								network.sendBroadcastMessage(nccommand); 
-							}
-							else {
-								JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
-							}
-							um.setUsernameTaken(false); // Reset flag
-						}
-						
+					try { // Sleep for 1 second
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					} 
+					
+					if (!um.getUsernameTaken()) {
+						prevUsername = um.getUser(); // Store previous user name
+						um.setUser(name); // Set name in UM
+						lblCurrentUsername.setText(name); // Display it
+						JOptionPane.showMessageDialog(null,
+								name+ ", you have been successfully registered!");
+						// Announce name change
+						String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
+						network.sendBroadcastMessage(nccommand); 
 					}
-				});
-				
-				//Add member to existing group
-				btnNewMember.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// Sends invite to all selected members
-						selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
-						boolean success = gm.addMembers(selectedUsers);
-						if (success) {
-							JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
-						}
-						else {
-							JOptionPane.showMessageDialog(new JFrame(), "Unable to invite. Make sure you are in a group", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
-						}
+					else {
+						JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
 					}
-				});
+					um.setUsernameTaken(false); // Reset flag
+				}
 				
-				//Friends Function
+			}
+		});
 				
-				//Add Friend
-				btn_AddFriend.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
-						
-						String IP = network.getRandomIP(); // Generates IP
-						fm.inviteFriends(selectedUsers, um.getUser(), IP);
-						listOnlineUsers.clearSelection(); // Clears selection for online users
+		//Add member to existing group
+		btnNewMember.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Sends invite to all selected members
+				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+				boolean success = gm.addMembers(selectedUsers);
+				if (success) {
+					JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
+				}
+				else {
+					JOptionPane.showMessageDialog(new JFrame(), "Unable to invite. Make sure you are in a group", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+				}
+			}
+		});
+		
+		//Friends Function
+		
+		//Add Friend
+		btn_AddFriend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+				
+				String IP = network.getRandomIP(); // Generates IP
+				fm.inviteFriends(selectedUsers, um.getUser(), IP);
+				listOnlineUsers.clearSelection(); // Clears selection for online users
 
-						JOptionPane.showMessageDialog(new JFrame(), "Friend request sent", "Success", JOptionPane.INFORMATION_MESSAGE); // Show error message
-					}
-				});
+				JOptionPane.showMessageDialog(new JFrame(), "Friend request sent", "Success", JOptionPane.INFORMATION_MESSAGE); // Show error message
+			}
+		});
 				
 		
 		new Thread(new Runnable() {
@@ -588,6 +594,13 @@ public class WhatsChat extends JFrame implements Performable {
 							if (command[1].equals(um.getUser())) { // If this command is for the user
 								fm.addFriend(command[2], command[3]); // Add to friend list
 								JOptionPane.showMessageDialog(new JFrame(), command[2] + " has accepted your friend request", "Friend Request", JOptionPane.INFORMATION_MESSAGE);
+							}
+						}
+						
+
+						if (command[0].equals("Kick!")) { // Kick you out of the group muahaha
+							if (command[1].equals(um.getUser())) { // If this command is for the user
+								gm.leaveGroup(command[2]);
 							}
 						}
 										
