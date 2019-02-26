@@ -442,8 +442,9 @@ public class WhatsChat extends JFrame implements Performable {
 			public void actionPerformed(ActionEvent e) {
 				name = JOptionPane.showInputDialog("Name");
 				
-				if(name.equals("")){
-					JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
+				if(name.equals("") || name.substring(0, 1).matches("[0-9]") || name.length() > 8){
+					JOptionPane.showMessageDialog(new JFrame(), "Username invalid", "Error", JOptionPane.ERROR_MESSAGE);
+					name = JOptionPane.showInputDialog("Name");
 				} else {
 					String command = "UsernameCheck|" + name + "|" + lblCurrentUsername.getText();;
 					network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
@@ -494,7 +495,10 @@ public class WhatsChat extends JFrame implements Performable {
 		btn_AddFriend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
-				
+				if (selectedUsers.isEmpty()) {
+					JOptionPane.showMessageDialog(new JFrame(), "Please select a friend", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					return;
+				}
 				String IP = network.getRandomIP(); // Generates IP
 				fm.inviteFriends(selectedUsers, um.getUser(), IP);
 				listOnlineUsers.clearSelection(); // Clears selection for online users
