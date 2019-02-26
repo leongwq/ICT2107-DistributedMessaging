@@ -96,6 +96,31 @@ public class GroupManagement{
 		network.sendBroadcastMessage(command);
 	}
 	
+	@SuppressWarnings("deprecation")
+	public void leaveGroup(String group) { // Leave the current group
+		jedis.removeGroupMember(IPMapping.get(group),um.getUser());
+		groupsModel.remove(groupsModel.indexOf(group)); // Remove the group from list
+		IPMapping.remove(group); // Remove from IP Mapping
+		t.stop();
+		
+		//Let's wait for the thread to die
+        try {
+			TimeUnit.MILLISECONDS.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        
+		disconnectChat();
+		currentGroup = "-"; // Remove current group
+		perf.updateCurrentGroup(); // Update UI
+		perf.clearChat();
+		groupMembers.clear(); // Clear group members list
+		
+		// Notify that i've left
+		String command = "ByeByeGroup";
+		network.sendBroadcastMessage(command);
+	}
+	
 	public void changeGroupName(String oldGroupName, String newGroupName) {
 		if (groupsModel.contains(oldGroupName)) { // 
 			String ip = IPMapping.get(oldGroupName);
@@ -199,6 +224,14 @@ public class GroupManagement{
 		// Sends invite to all selected members
 		for (int i = 0; i < selectedUsers.size(); i++) {
 			String bmsg = "GroupInvite|" + selectedUsers.get(i) + "|" + groupName + "|" + IP;
+			network.sendBroadcastMessage(bmsg);
+		}
+	}
+	
+	public void kickMembers(List<String> selectedUsers) {
+		// Sends invite to all selected members
+		for (int i = 0; i < selectedUsers.size(); i++) {
+			String bmsg = "Kick!|" + selectedUsers.get(i) + "|" + currentGroup;
 			network.sendBroadcastMessage(bmsg);
 		}
 	}

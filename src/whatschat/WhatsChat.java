@@ -114,16 +114,13 @@ public class WhatsChat extends JFrame implements Performable {
 		JMenuItem btnNewMember = new JMenuItem("Add Member");
 		mnGroupManagement.add(btnNewMember);
 		
-		JMenuItem btn_RemoveMember = new JMenuItem("Remove Member");
-		mnGroupManagement.add(btn_RemoveMember);
-		
-		JMenu mnFriends = new JMenu("Friends Management");
+		JMenu mnFriends = new JMenu("Friend Management");
 		menuBar.add(mnFriends);
 		
 		JMenuItem btn_AddFriend = new JMenuItem("Add Friend");
 		mnFriends.add(btn_AddFriend);
 		
-		JMenuItem btn_removeFriend = new JMenuItem("Remove Friend");
+		JMenuItem btn_removeFriend = new JMenuItem("Unfriend");
 		mnFriends.add(btn_removeFriend);
 		
 		contentPane = new JPanel();
@@ -136,7 +133,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		// Get random user name
 		Random rand = new Random();
-		String user = "Eva" + rand.nextInt(2000);
+		String user = "Eva" + rand.nextInt(9000);
 		um.setUser(user);
 
 		// Get all current online user
@@ -178,7 +175,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		JList<String> listGroup = new JList<String>(gm.getGroups());
 		listGroup.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		listGroup.setBounds(0, 33, 200, 200);
+		listGroup.setBounds(0, 6, 200, 227);
 		group.add(listGroup);
 		listGroup.setBackground(new Color(248, 248, 255));
 		
@@ -204,16 +201,12 @@ public class WhatsChat extends JFrame implements Performable {
 		});
 		listFriends.setBounds(6, 6, 194, 219);
 		friends.add(listFriends);
-		JButton btnClearGroupList = new JButton("Clear Selection");
 		JButton btnNewButton_2 = new JButton("Send");
 		JButton btnChnageGroupName = new JButton("");
 		
 		// Labels Declaration 
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
 		JLabel image = new JLabel("");
-		btnClearGroupList.setBounds(0, 0, 234, 29);
-		btnClearGroupList.setBounds(0, 0, 200, 22);
-		group.add(btnClearGroupList);
 		
 		// Probably the only client. Reset redis database
 		if (um.getOnlineUsers().getSize() == 1 && gm.getGroups().isEmpty()) {
@@ -282,12 +275,6 @@ public class WhatsChat extends JFrame implements Performable {
 					JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
 				}
 				gm.setGroupnameTaken(false); // Reset flag
-			}
-		});
-		
-		btnClearGroupList.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				listGroup.clearSelection();
 			}
 		});
 		
@@ -437,72 +424,101 @@ public class WhatsChat extends JFrame implements Performable {
 			}
 		});
 		
+		JMenuItem btn_RemoveMember = new JMenuItem("Remove Member");
+		btn_RemoveMember.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listGroupMembers.getSelectedValuesList(); // Stores selected users into variable
+				if (selectedUsers.isEmpty()) {
+					JOptionPane.showMessageDialog(new JFrame(), "Please select a user from the group members list", "Remove Member", JOptionPane.INFORMATION_MESSAGE);
+				}
+				gm.kickMembers(selectedUsers);
+			}
+		});
+		mnGroupManagement.add(btn_RemoveMember);
+		
 
 		//Getting inputs from user to create user name
-				RegisterUsername.addActionListener (new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						name = JOptionPane.showInputDialog("Name");
-						
-						if(name.equals("")){
-							JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
-						} else {
-							String command = "UsernameCheck|" + name + "|" + lblCurrentUsername.getText();;
-							network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
+		RegisterUsername.addActionListener (new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				name = JOptionPane.showInputDialog("Name");
+				
+				if(name.equals("")){
+					JOptionPane.showMessageDialog(new JFrame(), "Username cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					String command = "UsernameCheck|" + name + "|" + lblCurrentUsername.getText();;
+					network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
 
-							try { // Sleep for 1 second
-								Thread.sleep(1000);
-							} catch (InterruptedException e1) {
-								e1.printStackTrace();
-							} 
-							
-							if (!um.getUsernameTaken()) {
-								prevUsername = um.getUser(); // Store previous user name
-								um.setUser(name); // Set name in UM
-								lblCurrentUsername.setText(name); // Display it
-								JOptionPane.showMessageDialog(null,
-										name+ ", you have been successfully registered!");
-								// Announce name change
-								String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
-								network.sendBroadcastMessage(nccommand); 
-							}
-							else {
-								JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
-							}
-							um.setUsernameTaken(false); // Reset flag
-						}
-						
+					try { // Sleep for 1 second
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					} 
+					
+					if (!um.getUsernameTaken()) {
+						prevUsername = um.getUser(); // Store previous user name
+						um.setUser(name); // Set name in UM
+						lblCurrentUsername.setText(name); // Display it
+						JOptionPane.showMessageDialog(null,
+								name+ ", you have been successfully registered!");
+						// Announce name change
+						String nccommand = "NameChange|" + prevUsername + "|" + um.getUser();
+						network.sendBroadcastMessage(nccommand); 
 					}
-				});
-				
-				//Add member to existing group
-				btnNewMember.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// Sends invite to all selected members
-						selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
-						boolean success = gm.addMembers(selectedUsers);
-						if (success) {
-							JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
-						}
-						else {
-							JOptionPane.showMessageDialog(new JFrame(), "Unable to invite. Make sure you are in a group", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
-						}
+					else {
+						JOptionPane.showMessageDialog(new JFrame(), "User name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
 					}
-				});
+					um.setUsernameTaken(false); // Reset flag
+				}
 				
-				//Friends Function
+			}
+		});
 				
-				//Add Friend
-				btn_AddFriend.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
-						
-						String IP = network.getRandomIP(); // Generates IP
-						fm.inviteFriends(selectedUsers, um.getUser(), IP);
-						listOnlineUsers.clearSelection(); // Clears selection for online users
+		//Add member to existing group
+		btnNewMember.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Sends invite to all selected members
+				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+				boolean success = gm.addMembers(selectedUsers);
+				if (success) {
+					JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
+				}
+				else {
+					JOptionPane.showMessageDialog(new JFrame(), "Unable to invite. Make sure you are in a group", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+				}
+			}
+		});
+		
+		//Friends Function
+		
+		//Add Friend
+		btn_AddFriend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+				
+				String IP = network.getRandomIP(); // Generates IP
+				fm.inviteFriends(selectedUsers, um.getUser(), IP);
+				listOnlineUsers.clearSelection(); // Clears selection for online users
 
-						JOptionPane.showMessageDialog(new JFrame(), "Friend request sent", "Success", JOptionPane.INFORMATION_MESSAGE); // Show error message
-					}
-				});
+				JOptionPane.showMessageDialog(new JFrame(), "Friend request sent", "Success", JOptionPane.INFORMATION_MESSAGE); // Show error message
+			}
+		});
+		
+		btn_removeFriend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listFriends.getSelectedValuesList(); // Stores selected friend into variable
+				if (selectedUsers.isEmpty()) {
+					JOptionPane.showMessageDialog(new JFrame(), "Please select a friend", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					return;
+				}
+				int dialogButton = JOptionPane.YES_NO_OPTION;
+				int dialogResult = JOptionPane.showConfirmDialog (null, "Would you like to unfriend " + selectedUsers.get(0) ,"Unfriend",dialogButton);
+				if(dialogResult == JOptionPane.YES_OPTION){ // I want to unfriend
+					fm.removeFriend(selectedUsers.get(0));
+					String bmsg = "Unfriend|" + selectedUsers.get(0) + "|" + um.getUser();
+					network.sendBroadcastMessage(bmsg);
+				}
+			}
+		});
 				
 		
 		new Thread(new Runnable() {
@@ -598,6 +614,16 @@ public class WhatsChat extends JFrame implements Performable {
 							if (command[1].equals(um.getUser())) { // If this command is for the user
 								fm.addFriend(command[2], command[3]); // Add to friend list
 								JOptionPane.showMessageDialog(new JFrame(), command[2] + " has accepted your friend request", "Friend Request", JOptionPane.INFORMATION_MESSAGE);
+							}
+						}
+						if (command[0].equals("Unfriend")) { // FriendAccepted,TargetUser,Requester,IP
+							if (command[1].equals(um.getUser())) { // If this command is for the user
+								fm.removeFriend(command[2]);
+							}
+						}
+						if (command[0].equals("Kick!")) { // Kick you out of the group muahaha
+							if (command[1].equals(um.getUser())) { // If this command is for the user
+								gm.leaveGroup(command[2]);
 							}
 						}
 										
