@@ -51,4 +51,11 @@ public class FriendManagement {
 		friendsModel.remove(friendsModel.indexOf(friend)); // Remove the friend from list
 		IPMapping.remove(friend); // Remove from IP Mapping
 	}
+	
+	public void changeName(String oldUser, String newUser) {
+		if (friendsModel.contains(oldUser)) {
+			friendsModel.removeElement(oldUser);
+			friendsModel.addElement(newUser);
+		}
+	}
 }
