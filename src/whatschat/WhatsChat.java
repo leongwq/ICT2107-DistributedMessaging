@@ -120,7 +120,7 @@ public class WhatsChat extends JFrame implements Performable {
 		JMenuItem btn_AddFriend = new JMenuItem("Add Friend");
 		mnFriends.add(btn_AddFriend);
 		
-		JMenuItem btn_removeFriend = new JMenuItem("Remove Friend");
+		JMenuItem btn_removeFriend = new JMenuItem("Unfriend");
 		mnFriends.add(btn_removeFriend);
 		
 		contentPane = new JPanel();
@@ -133,7 +133,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		// Get random user name
 		Random rand = new Random();
-		String user = "Eva" + rand.nextInt(2000);
+		String user = "Eva" + rand.nextInt(9000);
 		um.setUser(user);
 
 		// Get all current online user
@@ -428,6 +428,9 @@ public class WhatsChat extends JFrame implements Performable {
 		btn_RemoveMember.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectedUsers = listGroupMembers.getSelectedValuesList(); // Stores selected users into variable
+				if (selectedUsers.isEmpty()) {
+					JOptionPane.showMessageDialog(new JFrame(), "Please select a user from the group members list", "Remove Member", JOptionPane.INFORMATION_MESSAGE);
+				}
 				gm.kickMembers(selectedUsers);
 			}
 		});
@@ -497,6 +500,23 @@ public class WhatsChat extends JFrame implements Performable {
 				listOnlineUsers.clearSelection(); // Clears selection for online users
 
 				JOptionPane.showMessageDialog(new JFrame(), "Friend request sent", "Success", JOptionPane.INFORMATION_MESSAGE); // Show error message
+			}
+		});
+		
+		btn_removeFriend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				selectedUsers = listFriends.getSelectedValuesList(); // Stores selected friend into variable
+				if (selectedUsers.isEmpty()) {
+					JOptionPane.showMessageDialog(new JFrame(), "Please select a friend", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					return;
+				}
+				int dialogButton = JOptionPane.YES_NO_OPTION;
+				int dialogResult = JOptionPane.showConfirmDialog (null, "Would you like to unfriend " + selectedUsers.get(0) ,"Unfriend",dialogButton);
+				if(dialogResult == JOptionPane.YES_OPTION){ // I want to unfriend
+					fm.removeFriend(selectedUsers.get(0));
+					String bmsg = "Unfriend|" + selectedUsers.get(0) + "|" + um.getUser();
+					network.sendBroadcastMessage(bmsg);
+				}
 			}
 		});
 				
@@ -596,8 +616,11 @@ public class WhatsChat extends JFrame implements Performable {
 								JOptionPane.showMessageDialog(new JFrame(), command[2] + " has accepted your friend request", "Friend Request", JOptionPane.INFORMATION_MESSAGE);
 							}
 						}
-						
-
+						if (command[0].equals("Unfriend")) { // FriendAccepted,TargetUser,Requester,IP
+							if (command[1].equals(um.getUser())) { // If this command is for the user
+								fm.removeFriend(command[2]);
+							}
+						}
 						if (command[0].equals("Kick!")) { // Kick you out of the group muahaha
 							if (command[1].equals(um.getUser())) { // If this command is for the user
 								gm.leaveGroup(command[2]);
