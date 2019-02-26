@@ -341,7 +341,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		//Change group name
 		btnChangeName.addActionListener(new ActionListener() {
-public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				if (gm.getCurrentGroup() != "Current Group: -") {
 					groupName = JOptionPane.showInputDialog("New Group Name");
 					
