@@ -444,6 +444,7 @@ public class WhatsChat extends JFrame implements Performable {
 				
 				if(name.equals("") || name.substring(0, 1).matches("[0-9]") || name.length() > 8){
 					JOptionPane.showMessageDialog(new JFrame(), "Username invalid", "Error", JOptionPane.ERROR_MESSAGE);
+					name = JOptionPane.showInputDialog("Name");
 				} else {
 					String command = "UsernameCheck|" + name + "|" + lblCurrentUsername.getText();;
 					network.sendBroadcastMessage(command); // Checks if the user name is taken by other user
