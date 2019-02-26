@@ -341,36 +341,40 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		//Change group name
 		btnChangeName.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				groupName = JOptionPane.showInputDialog("New Group Name");
-				
-				if(groupName.equals("")){
-					JOptionPane.showMessageDialog(new JFrame(), "Group name cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
-				} else {
-					String command = "GroupnameCheck|" + groupName + "|" + um.getUser();
-					network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
-
-					try { // Sleep for 1 second
-						Thread.sleep(1000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					} 
+public void actionPerformed(ActionEvent e) {
+				if (gm.getCurrentGroup() != "Current Group: -") {
+					groupName = JOptionPane.showInputDialog("New Group Name");
 					
-					if (!gm.getGroupnameTaken()) {
-						prevGroupName = gm.getCurrentGroup(); // Store previous group name
-						gm.setCurrentGroup(groupName); // Set name in UM
-						JOptionPane.showMessageDialog(null,
-								groupName+ ", you have been successfully changed!");
-						// Announce name change
-						String nccommand = "GroupNameChanged|" + prevGroupName + "|" + gm.getCurrentGroup();
-						network.sendBroadcastMessage(nccommand); 
-						currentGroupLabel.setText("Current Group: "+gm.getCurrentGroup()); // Display it
+					if(groupName.equals("")){
+						JOptionPane.showMessageDialog(new JFrame(), "Group name cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
+					} else {
+						String command = "GroupnameCheck|" + groupName;
+						network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
+
+						try { // Sleep for 1 second
+							Thread.sleep(1000);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						} 
+						
+						if (!gm.getGroupnameTaken()) {
+							prevGroupName = gm.getCurrentGroup(); // Store previous group name
+							gm.setCurrentGroup(groupName); // Set name in UM
+							currentGroupLabel.setText("Current Group: -"); // Display it
+							JOptionPane.showMessageDialog(null,
+									groupName+ ", you have been successfully changed!");
+							// Announce name change
+							String nccommand = "GroupNameChanged|" + prevGroupName + "|" + gm.getCurrentGroup();
+							network.sendBroadcastMessage(nccommand); 
+						}
+						else {
+							JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+						}
+						gm.setGroupnameTaken(false); // Reset flag
 					}
-					else {
-						JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
-					}
-					gm.setGroupnameTaken(false); // Reset flag
 				}
+				
+				
 			}
 		});
 		
