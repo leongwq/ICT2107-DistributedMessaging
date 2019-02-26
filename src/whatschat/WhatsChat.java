@@ -225,11 +225,11 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		image.setIcon(new ImageIcon("img/profile.png"));
 
-		image.setBounds(64, 18, 104, 99);
+		image.setBounds(67, 18, 104, 99);
 		User.add(image);
 		
 		lblCurrentUsername.setHorizontalAlignment(SwingConstants.CENTER);
-		lblCurrentUsername.setBounds(64, 131, 87, 20);
+		lblCurrentUsername.setBounds(74, 129, 87, 20);
 
 		User.add(lblCurrentUsername);
 		lblCurrentUsername.setText(user);
