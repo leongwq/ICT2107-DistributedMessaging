@@ -167,7 +167,7 @@ public class WhatsChat extends JFrame implements Performable {
 		Online.add(listOnlineUsers);
 		
 		JButton btnClearOnlineUsers = new JButton("Clear Selection"); // Clear online selection
-		btnClearOnlineUsers.setBounds(0, 0, 200, 29);
+		btnClearOnlineUsers.setBounds(0, 0, 222, 30);
 		Online.add(btnClearOnlineUsers);
 		
 		// Group Tab
