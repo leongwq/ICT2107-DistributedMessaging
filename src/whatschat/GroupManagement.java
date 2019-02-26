@@ -98,9 +98,10 @@ public class GroupManagement{
 		}
         
 		disconnectChat();
-		currentGroup = "-"; // Remove current group
+		currentGroup = "-"; // Reset current group
 		perf.updateCurrentGroup(); // Update UI
 		perf.clearChat();
+		perf.disableChatButton();
 		clearGroupMembers(); // Clear group members list
 		
 		// Notify that i've left
@@ -123,9 +124,10 @@ public class GroupManagement{
 		}
         
 		disconnectChat();
-		currentGroup = "-"; // Remove current group
+		currentGroup = "-"; // Reset current group
 		perf.updateCurrentGroup(); // Update UI
 		perf.clearChat();
+		perf.disableChatButton();
 		clearGroupMembers(); // Clear group members list
 		
 		// Notify that i've left
@@ -185,6 +187,7 @@ public class GroupManagement{
 		setGroupMembers();
 		perf.updateCurrentGroup(); // Update UI
 		perf.clearChat();
+		perf.enableChatButton();
 		List<String> conversations = jedis.getChatContent(ip);
 		perf.updateChatWithHistory(conversations);
 	}
@@ -206,6 +209,7 @@ public class GroupManagement{
 		currentGroup = "Sliding into " + friendName + "'s DM";
 		perf.updateCurrentGroup(); // Update UI
 		perf.clearChat();
+		perf.enableChatButton();
 		List<String> conversations = jedis.getChatContent(ip);
 		perf.updateChatWithHistory(conversations);
 	}
