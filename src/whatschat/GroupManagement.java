@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListModel;
@@ -68,6 +70,19 @@ public class GroupManagement{
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public void leaveAllMyGroup() {
+		Iterator<Entry<String, String>> it = IPMapping.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pair = (Map.Entry)it.next();
+			jedis.removeGroupMember(pair.getValue().toString(),um.getUser());
+	        it.remove(); // avoids a ConcurrentModificationException
+	    }
+		// Notify that i've left
+		String command = "ByeByeGroup";
+		network.sendBroadcastMessage(command);
+	}
+	
 	@SuppressWarnings("deprecation")
 	public void leaveGroup() { // Leave the current group
 		jedis.removeGroupMember(IPMapping.get(currentGroup),um.getUser());
@@ -127,7 +142,6 @@ public class GroupManagement{
 			perf.updateCurrentGroup();
 			IPMapping.put(newGroupName,ip);
 		}
-		
 	}
 	
 	public void clearGroupMembers() {
