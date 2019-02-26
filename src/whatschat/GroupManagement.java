@@ -21,7 +21,7 @@ public class GroupManagement{
 	private Map<String, String> IPMapping = new HashMap<String, String>();
 	private boolean GroupnameTaken = false;
 	private volatile boolean groupChanged = false;
-	private String currentGroup;
+	private String currentGroup = "-";
 	Thread t;	
 	
 	JedisConnection jedis = new JedisConnection(); // Create Jedis object
@@ -50,10 +50,10 @@ public class GroupManagement{
 
 	public void addGroup(String groupName, String groupIP) {
 		if (!groupsModel.contains(groupName)) { // Group name is not taken
-			currentGroup = groupName;
+//			currentGroup = groupName;
 			perf.updateCurrentGroup(); // Update UI
-			network.connectToChat(groupIP); // Connect to chat IP
-			t = receiveChat(); // Receives thread object
+//			network.connectToChat(groupIP); // Connect to chat IP
+//			t = receiveChat(); // Receives thread object
 			jedis.pushGroupMembers(groupIP, um.getUser()); // Updates group member list in redis
 			IPMapping.put(groupName,groupIP);
 			groupsModel.addElement(groupName); 
@@ -154,7 +154,9 @@ public class GroupManagement{
 		String ip = IPMapping.get(groupsModel.getElementAt(index));
 		network.connectToChat(ip); // Connect to chat IP
 		
-		t.stop(); // DIE NOW!
+		if (t != null) {
+			t.stop(); // DIE NOW!
+		}
 		
 		//Let's wait for the thread to die
         try {
