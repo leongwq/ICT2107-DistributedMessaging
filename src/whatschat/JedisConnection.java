@@ -42,12 +42,67 @@ public class JedisConnection {
 
     }
     
+    public void pushGroupMembers(String ip, String username) {
+    	Jedis jedis = pool.getResource();
+    	
+    	try {
+    		jedis.rpush("G" + ip, username);
+    	} catch (JedisException e) {
+    		//if something wrong happen, return it back to the pool
+    		if (null != jedis) {
+    			jedis.close();
+    		}
+    	} finally {
+    		if (null != jedis) {
+    			jedis.close();
+    		}
+    	}
+
+    }
+    
+    public void removeGroupMember(String ip, String username) {
+    	Jedis jedis = pool.getResource();
+    	
+    	try {
+    		jedis.lrem("G" + ip, 1, username);
+    	} catch (JedisException e) {
+    		//if something wrong happen, return it back to the pool
+    		if (null != jedis) {
+    			jedis.close();
+    		}
+    	} finally {
+    		if (null != jedis) {
+    			jedis.close();
+    		}
+    	}
+
+    }
+    
     public List<String> getChatContent(String ip) {
     	Jedis jedis = pool.getResource();
     	
     	try {
     		List<String> messages = jedis.lrange(ip, -10, -1);
     		return messages;
+    	} catch (JedisException e) {
+    		//if something wrong happen, return it back to the pool
+    		if (null != jedis) {
+    			jedis.close();
+    		}
+    	} finally {
+    		if (null != jedis) {
+    			jedis.close();
+    		}
+    	}
+		return null;
+    }
+    
+    public List<String> getGroupMembers(String ip) {
+    	Jedis jedis = pool.getResource();
+    	
+    	try {
+    		List<String> members = jedis.lrange("G" + ip, 0, -1);
+    		return members;
     	} catch (JedisException e) {
     		//if something wrong happen, return it back to the pool
     		if (null != jedis) {
