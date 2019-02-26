@@ -34,6 +34,7 @@ import java.awt.Font;
 import javax.swing.JSeparator;
 import javax.swing.ListSelectionModel;
 
+@SuppressWarnings("serial")
 public class WhatsChat extends JFrame implements Performable {
 	
 	Network network = new Network();
@@ -56,6 +57,7 @@ public class WhatsChat extends JFrame implements Performable {
 	private JPanel contentPane;
 	private JTextField textField;
 	JTextArea textArea = new JTextArea();
+	JButton btnSendChat = new JButton("Send");
 	
 	JLabel currentGroupLabel = new JLabel("");
 	
@@ -191,6 +193,7 @@ public class WhatsChat extends JFrame implements Performable {
 		listFriends.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				@SuppressWarnings("rawtypes")
 				JList list = (JList)e.getSource();
 				if (e.getClickCount() == 2) { // Double-click detected. 
 		            int index = list.locationToIndex(e.getPoint());
@@ -201,7 +204,7 @@ public class WhatsChat extends JFrame implements Performable {
 		});
 		listFriends.setBounds(6, 6, 194, 219);
 		friends.add(listFriends);
-		JButton btnNewButton_2 = new JButton("Send");
+		btnSendChat.setEnabled(false);
 		
 		// Labels Declaration 
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
@@ -234,6 +237,7 @@ public class WhatsChat extends JFrame implements Performable {
 		User.add(lblCurrentUsername);
 		lblCurrentUsername.setText(user);
 		
+		@SuppressWarnings("rawtypes")
 		JList list_2 = new JList();
 		list_2.setBounds(30, 123, 147, 90);
 		Online.add(list_2);
@@ -299,9 +303,9 @@ public class WhatsChat extends JFrame implements Performable {
 		panel.add(textField);
 		textField.setColumns(10);
 		
-		btnNewButton_2.setBounds(372, 437, 117, 29);
+		btnSendChat.setBounds(372, 437, 117, 29);
 
-		panel.add(btnNewButton_2);
+		panel.add(btnSendChat);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 15));
 		textArea.setEditable(false);
 		textArea.setBackground(new Color(248, 248, 255));
@@ -330,7 +334,7 @@ public class WhatsChat extends JFrame implements Performable {
 		lblGroupMembers.setBounds(6, 6, 99, 16);
 		panel_1.add(lblGroupMembers);
 		
-		btnNewButton_2.addActionListener(new ActionListener() {
+		btnSendChat.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String chatMsg = um.getUser() + ": " + textField.getText();
 				network.sendChatMessage(chatMsg);
@@ -383,6 +387,7 @@ public class WhatsChat extends JFrame implements Performable {
 		listGroup.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				@SuppressWarnings("rawtypes")
 				JList list = (JList)e.getSource();
 				if (e.getClickCount() == 2) { // Double-click detected. Behavior for group selection
 		            int index = list.locationToIndex(e.getPoint());
@@ -633,6 +638,15 @@ public class WhatsChat extends JFrame implements Performable {
 		for(int i = 0; i < conversations.size(); i++) {
 			textArea.append(conversations.get(i) + '\n');
         }
+	}
 	
+	@Override
+	public void enableChatButton() {
+		btnSendChat.setEnabled(true);
+	}
+	
+	@Override
+	public void disableChatButton() {
+		btnSendChat.setEnabled(false);
 	}
 }

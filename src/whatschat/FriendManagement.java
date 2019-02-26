@@ -10,7 +10,6 @@ public class FriendManagement {
 	
 	private Network network;
 	private GroupManagement gm;
-	private UserManagement um;
 
 	private DefaultListModel<String> friendsModel = new DefaultListModel<String>();
 	private Map<String, String> IPMapping = new HashMap<String, String>();
@@ -18,7 +17,6 @@ public class FriendManagement {
 	public FriendManagement(GroupManagement gm, UserManagement um, Network network) {
         this.network = network;
         this.gm = gm;
-        this.um = um;
     }
 	
 	public DefaultListModel<String> getFriends() {
