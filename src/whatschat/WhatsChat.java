@@ -178,7 +178,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		JList<String> listGroup = new JList<String>(gm.getGroups());
 		listGroup.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		listGroup.setBounds(0, 33, 200, 200);
+		listGroup.setBounds(0, 6, 200, 227);
 		group.add(listGroup);
 		listGroup.setBackground(new Color(248, 248, 255));
 		
@@ -204,16 +204,12 @@ public class WhatsChat extends JFrame implements Performable {
 		});
 		listFriends.setBounds(6, 6, 194, 219);
 		friends.add(listFriends);
-		JButton btnClearGroupList = new JButton("Clear Selection");
 		JButton btnNewButton_2 = new JButton("Send");
 		JButton btnChnageGroupName = new JButton("");
 		
 		// Labels Declaration 
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
 		JLabel image = new JLabel("");
-		btnClearGroupList.setBounds(0, 0, 234, 29);
-		btnClearGroupList.setBounds(0, 0, 200, 22);
-		group.add(btnClearGroupList);
 		
 		// Probably the only client. Reset redis database
 		if (um.getOnlineUsers().getSize() == 1 && gm.getGroups().isEmpty()) {
@@ -282,12 +278,6 @@ public class WhatsChat extends JFrame implements Performable {
 					JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
 				}
 				gm.setGroupnameTaken(false); // Reset flag
-			}
-		});
-		
-		btnClearGroupList.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				listGroup.clearSelection();
 			}
 		});
 		
