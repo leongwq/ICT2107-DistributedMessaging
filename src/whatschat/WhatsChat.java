@@ -218,6 +218,7 @@ public class WhatsChat extends JFrame implements Performable {
 				// App closing. Time to say goodbye.
 				String command = "Bye|" + um.getUser();
 				network.sendBroadcastMessage(command);
+				gm.leaveAllMyGroup();
 		    }
 		});
 
@@ -446,6 +447,10 @@ public class WhatsChat extends JFrame implements Performable {
 			public void actionPerformed(ActionEvent e) {
 				// Sends invite to all selected members
 				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
+				if (selectedUsers.isEmpty()) {
+					JOptionPane.showMessageDialog(new JFrame(), "Please select an user", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					return;
+				}
 				boolean success = gm.addMembers(selectedUsers);
 				if (success) {
 					JOptionPane.showMessageDialog(new JFrame(), "Invited selected user(s)", "Success", JOptionPane.INFORMATION_MESSAGE); // Show success message
@@ -538,6 +543,7 @@ public class WhatsChat extends JFrame implements Performable {
 						
 						if (command[0].equals("Bye")) { // Going offline
 							um.removeOnlineUser(command[1]); // Remove offline user from user model
+							
 						}
 						
 						if (command[0].equals("GroupnameCheck")) { // Check if group name is taken
