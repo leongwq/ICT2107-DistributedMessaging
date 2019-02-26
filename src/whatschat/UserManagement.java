@@ -37,7 +37,7 @@ public class UserManagement {
 	}
 	
 	public void changeName(String oldUser, String newUser) {
-		if (onlineUsersModel.contains(oldUser)) { // 
+		if (onlineUsersModel.contains(oldUser)) {
 			onlineUsersModel.removeElement(oldUser);
 			onlineUsersModel.addElement(newUser);
 		}

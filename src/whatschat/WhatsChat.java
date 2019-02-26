@@ -88,7 +88,7 @@ public class WhatsChat extends JFrame implements Performable {
 		JMenu mnUser = new JMenu("User");
 		menuBar.add(mnUser);
 		
-		JMenuItem RegisterUsername = new JMenuItem("Register");
+		JMenuItem RegisterUsername = new JMenuItem("Change Name");
 		mnUser.add(RegisterUsername);
 		
 		JMenu mnGroupManagement = new JMenu("Group Management");
@@ -555,6 +555,7 @@ public class WhatsChat extends JFrame implements Performable {
 						
 						if (command[0].equals("NameChange")) {
 							um.changeName(command[1], command[2]);
+							fm.changeName(command[1], command[2]);
 						}
 						
 						if (command[0].equals("KnockKnock")) {
