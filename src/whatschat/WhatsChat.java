@@ -30,15 +30,15 @@ import javax.swing.JMenuItem;
 import java.awt.Color;
 import javax.swing.JTabbedPane;
 import javax.swing.BorderFactory;
-import java.awt.Component;
 import java.awt.Font;
 import javax.swing.JSeparator;
+import javax.swing.ListSelectionModel;
 
 public class WhatsChat extends JFrame implements Performable {
 	
 	Network network = new Network();
 	UserManagement um = new UserManagement();
-	GroupManagement gm = new GroupManagement(WhatsChat.this,network);
+	GroupManagement gm = new GroupManagement(WhatsChat.this,network,um);
 	FriendManagement fm = new FriendManagement(gm,um,network);
 	String groupName;
 	JedisConnection jedis = new JedisConnection(); // Create Jedis object
@@ -80,7 +80,7 @@ public class WhatsChat extends JFrame implements Performable {
 	 */
 	public WhatsChat() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 812, 549);
+		setBounds(100, 100, 944, 549);
 		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -138,13 +138,13 @@ public class WhatsChat extends JFrame implements Performable {
 		// User Panel. Side menu
 		JPanel User = new JPanel();
 		User.setBackground(Color.WHITE);
-		User.setBounds(10, 11, 267, 477);
+		User.setBounds(10, 11, 240, 477);
 		contentPane.add(User);
 		User.setLayout(null);
 				
 		// Tab Pane
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(6, 184, 255, 277);
+		tabbedPane.setBounds(6, 184, 227, 277);
 		User.add(tabbedPane);
 		
 		// Online Tab
@@ -153,13 +153,13 @@ public class WhatsChat extends JFrame implements Performable {
 		tabbedPane.addTab("Online", null, Online, null);
 		Online.setLayout(null);
 		
-		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers()); // Online users list
+		JList<String> listOnlineUsers = new JList<String>(um.getOnlineUsers());
 		listOnlineUsers.setBackground(new Color(248, 248, 255));
-		listOnlineUsers.setBounds(0, 28, 188, 205);
+		listOnlineUsers.setBounds(0, 28, 200, 205);
 		Online.add(listOnlineUsers);
 		
 		JButton btnClearOnlineUsers = new JButton("Clear Selection"); // Clear online selection
-		btnClearOnlineUsers.setBounds(0, 0, 250, 29);
+		btnClearOnlineUsers.setBounds(0, 0, 200, 29);
 		Online.add(btnClearOnlineUsers);
 		
 		// Group Tab
@@ -169,7 +169,8 @@ public class WhatsChat extends JFrame implements Performable {
 		group.setLayout(null);
 		
 		JList<String> listGroup = new JList<String>(gm.getGroups());
-		listGroup.setBounds(0, 33, 188, 200);
+		listGroup.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		listGroup.setBounds(0, 33, 200, 200);
 		group.add(listGroup);
 		listGroup.setBackground(new Color(248, 248, 255));
 		
@@ -180,6 +181,7 @@ public class WhatsChat extends JFrame implements Performable {
 		friends.setLayout(null);
 		
 		JList<String> listFriends = new JList<String>(fm.getFriends());
+		listFriends.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		listFriends.setBackground(new Color(248, 248, 255));
 		listFriends.addMouseListener(new MouseAdapter() {
 			@Override
@@ -192,7 +194,7 @@ public class WhatsChat extends JFrame implements Performable {
 		        }
 			}
 		});
-		listFriends.setBounds(6, 6, 244, 243);
+		listFriends.setBounds(6, 6, 194, 219);
 		friends.add(listFriends);
 		JButton btnClearGroupList = new JButton("Clear Selection");
 		JButton btnNewButton_2 = new JButton("Send");
@@ -201,7 +203,7 @@ public class WhatsChat extends JFrame implements Performable {
 		// Labels Declaration 
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
 		JLabel image = new JLabel("");
-		btnClearGroupList.setBounds(0, 0, 250, 22);
+		btnClearGroupList.setBounds(0, 0, 200, 22);
 		group.add(btnClearGroupList);
 		
 		// Probably the only client. Reset redis database
@@ -221,7 +223,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		image.setIcon(new ImageIcon("img/profile.png"));
 
-		image.setBounds(64, 16, 104, 99);
+		image.setBounds(64, 18, 104, 99);
 		User.add(image);
 		
 		lblCurrentUsername.setHorizontalAlignment(SwingConstants.CENTER);
@@ -283,7 +285,7 @@ public class WhatsChat extends JFrame implements Performable {
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
 
-		panel.setBounds(287, 11, 505, 477);
+		panel.setBounds(262, 11, 505, 477);
 
 		contentPane.add(panel);
 		panel.setLayout(null);
@@ -291,7 +293,7 @@ public class WhatsChat extends JFrame implements Performable {
 		textField = new JTextField();
 		textField.setBackground(new Color(248, 248, 255));
 
-		textField.setBounds(15, 437, 342, 29);
+		textField.setBounds(15, 437, 355, 29);
 
 		panel.add(textField);
 		textField.setColumns(10);
@@ -318,6 +320,16 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		btnChnageGroupName.setBounds(464, 7, 26, 29);
 		panel.add(btnChnageGroupName);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBackground(Color.WHITE);
+		panel_1.setBounds(779, 11, 152, 477);
+		contentPane.add(panel_1);
+		panel_1.setLayout(null);
+		
+		JList<String> listGroupMembers = new JList<String>(gm.getGroupMembers());
+		listGroupMembers.setBounds(25, 103, 108, 278);
+		panel_1.add(listGroupMembers);
 		
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -547,8 +559,8 @@ public class WhatsChat extends JFrame implements Performable {
 							}
 						}
 						
-						if (command[0].equals("CheckMember")) { //Check Member in group
-							um.getUser();
+						if (command[0].equals("NewMember")) { // Update group member list
+							gm.setGroupMembers();
 						}
 						
 						if (command[0].equals("DeleteMember")) { //Delete Member command.
@@ -606,4 +618,5 @@ public class WhatsChat extends JFrame implements Performable {
         }
 	
 	}
+	
 }
