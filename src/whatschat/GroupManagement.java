@@ -127,7 +127,6 @@ public class GroupManagement{
 			perf.updateCurrentGroup();
 			IPMapping.put(newGroupName,ip);
 		}
-		
 	}
 	
 	public void clearGroupMembers() {

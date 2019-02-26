@@ -202,7 +202,6 @@ public class WhatsChat extends JFrame implements Performable {
 		listFriends.setBounds(6, 6, 194, 219);
 		friends.add(listFriends);
 		JButton btnNewButton_2 = new JButton("Send");
-		JButton btnChnageGroupName = new JButton("");
 		
 		// Labels Declaration 
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
@@ -251,6 +250,11 @@ public class WhatsChat extends JFrame implements Performable {
 				groupName = JOptionPane.showInputDialog("Enter a group name");
 				
 				if (groupName == null) { return; } // If there is no input, exit the method
+				
+				if (groupName.equals("")) {
+					JOptionPane.showMessageDialog(new JFrame(), "Group name cannot be blank", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					groupName = JOptionPane.showInputDialog("Enter a group name");
+				}
 				
 				String command = "GroupnameCheck|" + groupName + "|" + um.getUser();
 				network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
@@ -311,12 +315,6 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		currentGroupLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		
-		btnChnageGroupName.setBackground(Color.WHITE);
-		btnChnageGroupName.setIcon(new ImageIcon("img/setting.png"));
-		
-		btnChnageGroupName.setBounds(464, 7, 26, 29);
-		panel.add(btnChnageGroupName);
-		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBackground(Color.WHITE);
 		panel_1.setBounds(779, 11, 152, 477);
@@ -343,6 +341,12 @@ public class WhatsChat extends JFrame implements Performable {
 		btnChangeName.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				groupName = JOptionPane.showInputDialog("New Group Name");
+				
+				if (gm.getCurrentGroup().equals("-")) {
+					JOptionPane.showMessageDialog(new JFrame(), "You are not in a group", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if (groupName == null) { return; };
 				
 				if(groupName.equals("")){
 					JOptionPane.showMessageDialog(new JFrame(), "Group name cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
@@ -371,43 +375,6 @@ public class WhatsChat extends JFrame implements Performable {
 					}
 					gm.setGroupnameTaken(false); // Reset flag
 				}
-			}
-		});
-		
-		//button near the label - to change group name
-		btnChnageGroupName.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				groupName = JOptionPane.showInputDialog("New Group Name");
-				
-				if(groupName.equals("")){
-					JOptionPane.showMessageDialog(new JFrame(), "Group name cannot be blank", "Error", JOptionPane.ERROR_MESSAGE);
-				} else {
-					String command = "GroupnameCheck|" + groupName;
-					network.sendBroadcastMessage(command); // Sends a request to check if group name is taken
-
-					try { // Sleep for 1 second
-						Thread.sleep(1000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					} 
-					
-					if (!gm.getGroupnameTaken()) {
-						prevGroupName = gm.getCurrentGroup(); // Store previous group name
-						gm.setCurrentGroup(groupName); // Set name in UM
-						currentGroupLabel.setText("Current Group: -"); // Display it
-						JOptionPane.showMessageDialog(null,
-								groupName+ ", you have been successfully changed!");
-						// Announce name change
-						String nccommand = "GroupNameChanged|" + prevGroupName + "|" + gm.getCurrentGroup();
-						network.sendBroadcastMessage(nccommand); 
-					}
-					else {
-						JOptionPane.showMessageDialog(new JFrame(), "Group name has been taken", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
-					}
-					gm.setGroupnameTaken(false); // Reset flag
-				}
-				
 			}
 		});
 		
