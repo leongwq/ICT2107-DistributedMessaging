@@ -495,7 +495,10 @@ public class WhatsChat extends JFrame implements Performable {
 		btn_AddFriend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectedUsers = listOnlineUsers.getSelectedValuesList(); // Stores selected users into variable
-				
+				if (selectedUsers.isEmpty()) {
+					JOptionPane.showMessageDialog(new JFrame(), "Please select a friend", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+					return;
+				}
 				String IP = network.getRandomIP(); // Generates IP
 				fm.inviteFriends(selectedUsers, um.getUser(), IP);
 				listOnlineUsers.clearSelection(); // Clears selection for online users

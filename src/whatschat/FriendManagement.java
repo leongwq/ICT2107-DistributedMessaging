@@ -44,6 +44,7 @@ public class FriendManagement {
 	public void connectToFriend(int index) {
 		String ip = IPMapping.get(friendsModel.getElementAt(index));
 		gm.connectToGroup(ip, friendsModel.getElementAt(index));
+		gm.clearGroupMembers();
 	}
 	
 	public void removeFriend(String friend) {

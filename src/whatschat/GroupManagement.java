@@ -50,10 +50,7 @@ public class GroupManagement{
 
 	public void addGroup(String groupName, String groupIP) {
 		if (!groupsModel.contains(groupName)) { // Group name is not taken
-//			currentGroup = groupName;
 			perf.updateCurrentGroup(); // Update UI
-//			network.connectToChat(groupIP); // Connect to chat IP
-//			t = receiveChat(); // Receives thread object
 			jedis.pushGroupMembers(groupIP, um.getUser()); // Updates group member list in redis
 			IPMapping.put(groupName,groupIP);
 			groupsModel.addElement(groupName); 
@@ -89,7 +86,7 @@ public class GroupManagement{
 		currentGroup = "-"; // Remove current group
 		perf.updateCurrentGroup(); // Update UI
 		perf.clearChat();
-		groupMembers.clear(); // Clear group members list
+		clearGroupMembers(); // Clear group members list
 		
 		// Notify that i've left
 		String command = "ByeByeGroup";
@@ -114,7 +111,7 @@ public class GroupManagement{
 		currentGroup = "-"; // Remove current group
 		perf.updateCurrentGroup(); // Update UI
 		perf.clearChat();
-		groupMembers.clear(); // Clear group members list
+		clearGroupMembers(); // Clear group members list
 		
 		// Notify that i've left
 		String command = "ByeByeGroup";
@@ -131,6 +128,10 @@ public class GroupManagement{
 			IPMapping.put(newGroupName,ip);
 		}
 		
+	}
+	
+	public void clearGroupMembers() {
+		groupMembers.clear();
 	}
 	
 	public DefaultListModel<String> getGroups() {
@@ -196,7 +197,7 @@ public class GroupManagement{
 	}
 	
 	public void setGroupMembers() { // Sets the data of group members in defaultlistmodel
-		groupMembers.clear();
+		clearGroupMembers();
 		String ip = IPMapping.get(currentGroup);
 		if (ip == null) { return; }
 		List<String> members = jedis.getGroupMembers(ip);
