@@ -8,8 +8,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.File;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.awt.event.ActionEvent;
@@ -24,13 +26,17 @@ import javax.swing.JList;
 import javax.swing.SwingConstants;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.Color;
 import javax.swing.JTabbedPane;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import javax.swing.JSeparator;
 import javax.swing.ListSelectionModel;
 
@@ -58,6 +64,7 @@ public class WhatsChat extends JFrame implements Performable {
 	private JTextField textField;
 	JTextArea textArea = new JTextArea();
 	JButton btnSendChat = new JButton("Send");
+	JButton btnUploadImg = new JButton("Upload Profile Picture");
 	
 	JLabel currentGroupLabel = new JLabel("");
 	
@@ -228,11 +235,14 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		image.setIcon(new ImageIcon("img/profile.png"));
 
-		image.setBounds(67, 18, 104, 99);
+		image.setBounds(70, 32, 104, 99);
 		User.add(image);
 		
+		btnUploadImg.setBounds(25, 143, 183, 29);
+		User.add(btnUploadImg);
+		
 		lblCurrentUsername.setHorizontalAlignment(SwingConstants.CENTER);
-		lblCurrentUsername.setBounds(74, 129, 87, 20);
+		lblCurrentUsername.setBounds(74, 12, 87, 20);
 
 		User.add(lblCurrentUsername);
 		lblCurrentUsername.setText(user);
@@ -241,6 +251,21 @@ public class WhatsChat extends JFrame implements Performable {
 		JList list_2 = new JList();
 		list_2.setBounds(30, 123, 147, 90);
 		Online.add(list_2);
+		
+		// Upload Profile Picture
+		btnUploadImg.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser chooser = new JFileChooser();
+			    chooser.showOpenDialog(null);
+			    File f = chooser.getSelectedFile();
+			    try {
+			        ImageIcon ii=new ImageIcon(scaleImage(120, 120, ImageIO.read(new File(f.getAbsolutePath()))));//get the image from file chooser and scale it to match JLabel size
+			        image.setIcon(ii);
+			    } catch (Exception ex) {
+			        ex.printStackTrace();
+			    }
+			}
+		});
 		
 		btnClearOnlineUsers.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -648,5 +673,16 @@ public class WhatsChat extends JFrame implements Performable {
 	@Override
 	public void disableChatButton() {
 		btnSendChat.setEnabled(false);
+	}
+	
+	public static BufferedImage scaleImage(int w, int h, BufferedImage img) throws Exception {
+	    BufferedImage bi;
+	    bi = new BufferedImage(w, h, BufferedImage.TRANSLUCENT);
+	    Graphics2D g2d = (Graphics2D) bi.createGraphics();
+	    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	    g2d.addRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
+	    g2d.drawImage(img, 0, 0, w, h, null);
+	    g2d.dispose();
+	    return bi;
 	}
 }
