@@ -215,6 +215,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		// Labels Declaration 
 		JLabel lblCurrentUsername = new JLabel("NotRegistered");
+		lblCurrentUsername.setFont(new Font("Lucida Grande", Font.PLAIN, 17));
 		JLabel image = new JLabel("");
 		
 		// Probably the only client. Reset redis database
@@ -235,7 +236,7 @@ public class WhatsChat extends JFrame implements Performable {
 		
 		image.setIcon(new ImageIcon("img/profile.png"));
 
-		image.setBounds(70, 32, 104, 99);
+		image.setBounds(74, 50, 91, 81);
 		User.add(image);
 		
 		btnUploadImg.setBounds(25, 143, 183, 29);
