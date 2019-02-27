@@ -260,7 +260,7 @@ public class WhatsChat extends JFrame implements Performable {
 			    chooser.showOpenDialog(null);
 			    File f = chooser.getSelectedFile();
 			    try {
-			        ImageIcon ii=new ImageIcon(scaleImage(120, 120, ImageIO.read(new File(f.getAbsolutePath()))));//get the image from file chooser and scale it to match JLabel size
+			        ImageIcon ii=new ImageIcon(scaleImage(81, 91, ImageIO.read(new File(f.getAbsolutePath()))));//get the image from file chooser and scale it to match JLabel size
 			        image.setIcon(ii);
 			    } catch (Exception ex) {
 			        ex.printStackTrace();
