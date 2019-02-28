@@ -196,7 +196,9 @@ public class GroupManagement{
 	public void connectToGroup(String ip, String friendName) {
 		network.connectToChat(ip); // Connect to chat IP
 		
-		t.stop(); // DIE NOW!
+		if (t != null) {
+			t.stop(); // DIE NOW!
+		} 
 		
 		//Let's wait for the thread to die
         try {
